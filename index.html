@@ -146,6 +146,15 @@ a.ni::after{content:'↗';font-size:.6rem;margin-left:4px;opacity:.4}
 .btn:focus-visible{outline:2px solid var(--accent2);outline-offset:2px;box-shadow:0 0 0 4px rgba(108,99,255,.2)}
 .ni:focus-visible{background:rgba(108,99,255,.15);border-left-color:var(--accent)}
 input:focus-visible,select:focus-visible,textarea:focus-visible{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,99,255,.15)}
+/* 减少动画偏好 */
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:0.01ms!important;transition-duration:0.01ms!important}
+  .spinner{animation:none;border:3px solid var(--border);border-top-color:var(--accent)}
+  .tp{transition:none}
+  .btn:hover{transform:none}
+  .back-top{transition:none}
+  .sidebar{transition:none}
+}
 /* 快捷键提示 */
 .kbd{display:inline-block;padding:2px 6px;background:var(--tag-bg);border:1px solid var(--border);border-radius:4px;font-size:.7rem;font-family:monospace;color:var(--dim);margin-left:4px}
 /* 侧边栏移动端点击外部关闭 */
@@ -280,7 +289,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{border-color:var
         </div>
         <button class="btn bp" style="margin-top:12px" onclick="icGo()">🔄 转换并下载</button>
       </div>
-      <div id="ic-res"></div>
+      <div id="ic-res" aria-live="polite"></div>
     </div>
 
     <!-- 图片转PDF -->
@@ -526,7 +535,7 @@ console.log('Hi');
           <div><label>字体</label><select id="t2i-font"><option value="sans-serif">无衬线</option><option value="serif">衬线</option><option value="monospace">等宽</option></select></div>
         </div>
         <button class="btn bp" style="margin-top:12px" onclick="txt2img()">🆎 生成图片</button>
-        <div id="t2i-res" style="margin-top:12px"></div>
+        <div id="t2i-res" aria-live="polite" style="margin-top:12px"></div>
       </div>
     </div>
 
@@ -545,7 +554,7 @@ console.log('Hi');
         </div>
         <button class="btn bp" style="margin-top:12px" onclick="cmpGo()">🗜️ 压缩</button>
       </div>
-      <div id="cmp-res"></div>
+      <div id="cmp-res" aria-live="polite"></div>
     </div>
 
     <!-- 图片缩放 -->
@@ -618,7 +627,7 @@ console.log('Hi');
         <div style="margin-top:10px"><label>识别语言</label><select id="ocr-l"><option value="chi_sim">中文</option><option value="eng">English</option></select></div>
         <button class="btn bp" style="margin-top:10px" id="ocr-btn" onclick="ocrGo()">👁️ 开始识别</button>
         <div id="ocr-st" style="font-size:.78rem;color:var(--dim);margin-top:6px"></div>
-        <div id="ocr-res"></div>
+        <div id="ocr-res" aria-live="polite"></div>
       </div>
     </div>
 
@@ -631,7 +640,7 @@ console.log('Hi');
           <div><label>尺寸</label><select id="qr-sz"><option value="5">小</option><option value="10" selected>中</option><option value="20">大</option></select></div>
         </div>
         <button class="btn bp" style="margin-top:10px" onclick="qrGo()">生成</button>
-        <div id="qr-res" style="margin-top:12px;text-align:center"></div>
+        <div id="qr-res" aria-live="polite" style="margin-top:12px;text-align:center"></div>
       </div>
     </div>
 
@@ -661,7 +670,7 @@ console.log('Hi');
         <label>输入文本</label>
         <textarea id="hash-in" style="min-height:80px"></textarea>
         <button class="btn bp bs" style="margin-top:10px" onclick="hashGo()">计算</button>
-        <div id="hash-res"></div>
+        <div id="hash-res" aria-live="polite"></div>
       </div>
     </div>
 
@@ -690,7 +699,7 @@ console.log('Hi');
         </div>
         <div style="margin-top:8px"><label>测试文本</label><textarea id="re-t" style="min-height:100px"></textarea></div>
         <button class="btn bp bs" style="margin-top:10px" onclick="reGo()">测试</button>
-        <div id="re-res"></div>
+        <div id="re-res" aria-live="polite"></div>
       </div>
     </div>
 
@@ -703,7 +712,7 @@ console.log('Hi');
           <div style="flex:1;min-width:250px"><label>对比</label><textarea id="df-b" style="min-height:160px"></textarea></div>
         </div>
         <button class="btn bp bs" style="margin-top:10px" onclick="dfGo()">对比</button>
-        <div id="df-res"></div>
+        <div id="df-res" aria-live="polite"></div>
       </div>
     </div>
 
@@ -845,7 +854,7 @@ console.log('Hi');
         </div>
         <button class="btn bp" style="margin-top:12px" id="v2a-btn" onclick="v2aGo()">🎵 提取音频</button>
         <div id="v2a-st" style="font-size:.78rem;color:var(--dim);margin-top:6px"></div>
-        <div id="v2a-res" style="margin-top:10px"></div>
+        <div id="v2a-res" aria-live="polite" style="margin-top:10px"></div>
       </div>
     </div>
 
@@ -864,7 +873,7 @@ console.log('Hi');
         </div>
         <button class="btn bp" style="margin-top:12px" id="acv-btn" onclick="acvGo()">🔄 转换</button>
         <div id="acv-st" style="font-size:.78rem;color:var(--dim);margin-top:6px"></div>
-        <div id="acv-res" style="margin-top:10px"></div>
+        <div id="acv-res" aria-live="polite" style="margin-top:10px"></div>
       </div>
     </div>
 
@@ -880,11 +889,11 @@ console.log('Hi');
         <div class="st">⚙️ 输出设置</div>
         <div class="row">
           <div><label>目标格式</label><select id="vcv-fmt"><option value="mp4">MP4</option><option value="webm">WebM</option><option value="avi">AVI</option><option value="mov">MOV</option></select></div>
-          <div><label>分辨率</label><select id="vcv-res"><option value="">原始</option><option value="1920:-2">1080p</option><option value="1280:-2">720p</option><option value="854:-2">480p</option></select></div>
+          <div><label>分辨率</label><select id="vcv-res" aria-live="polite"><option value="">原始</option><option value="1920:-2">1080p</option><option value="1280:-2">720p</option><option value="854:-2">480p</option></select></div>
         </div>
         <button class="btn bp" style="margin-top:12px" id="vcv-btn" onclick="vcvGo()">🎬 转换</button>
         <div id="vcv-st" style="font-size:.78rem;color:var(--dim);margin-top:6px"></div>
-        <div id="vcv-res" style="margin-top:10px"></div>
+        <div id="vcv-res" aria-live="polite" style="margin-top:10px"></div>
       </div>
     </div>
 
@@ -905,7 +914,7 @@ console.log('Hi');
         </div>
         <button class="btn bp" style="margin-top:12px" id="vcut-btn" onclick="vcutGo()">✂️ 剪切</button>
         <div id="vcut-st" style="font-size:.78rem;color:var(--dim);margin-top:6px"></div>
-        <div id="vcut-res" style="margin-top:10px"></div>
+        <div id="vcut-res" aria-live="polite" style="margin-top:10px"></div>
       </div>
     </div>
 
@@ -926,7 +935,7 @@ console.log('Hi');
         </div>
         <button class="btn bp" style="margin-top:12px" id="vframe-btn" onclick="vframeGo()">🖼️ 提取</button>
         <div id="vframe-st" style="font-size:.78rem;color:var(--dim);margin-top:6px"></div>
-        <div id="vframe-res" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px"></div>
+        <div id="vframe-res" aria-live="polite" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px"></div>
       </div>
     </div>
 
@@ -982,7 +991,31 @@ function tSidebar(force){
 
 // ===== Helpers =====
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-function cpTxt(id){var el=document.getElementById(id);navigator.clipboard.writeText(el.value||el.textContent);alert('已复制!')}
+function showToast(msg,duration){
+  var toast=document.createElement('div');
+  toast.textContent=msg;
+  toast.setAttribute('role','status');
+  toast.setAttribute('aria-live','polite');
+  toast.style.cssText='position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:10px 20px;border-radius:10px;font-size:.85rem;font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;box-shadow:0 4px 20px rgba(0,0,0,.3)';
+  document.body.appendChild(toast);
+  requestAnimationFrame(function(){toast.style.opacity='1'});
+  setTimeout(function(){
+    toast.style.opacity='0';
+    setTimeout(function(){toast.remove()},300);
+  },duration||1500);
+}
+function cpTxt(id){
+  var el=document.getElementById(id);
+  var text=el.value||el.textContent;
+  if(!text.trim()){showToast('没有内容可复制');return}
+  navigator.clipboard.writeText(text).then(function(){
+    showToast('✅ 已复制到剪贴板');
+  }).catch(function(){
+    // Fallback
+    var ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();
+    showToast('✅ 已复制到剪贴板');
+  });
+}
 function dlBlob(content,name,type){
   var b=new Blob([content],{type:type});
   var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();
@@ -1921,7 +1954,8 @@ function filterTools(keyword){
 }
 
 // ===== 收藏功能 =====
-var favs=JSON.parse(localStorage.getItem('toolbox_favs')||'[]');
+var favs=[];
+try{favs=JSON.parse(localStorage.getItem('toolbox_favs')||'[]')}catch(e){}
 var favMode=false;
 function toggleFavMode(){
   favMode=!favMode;
@@ -1932,7 +1966,7 @@ function toggleFavMode(){
 function toggleFav(tool){
   var idx=favs.indexOf(tool);
   if(idx>=0)favs.splice(idx,1);else favs.push(tool);
-  localStorage.setItem('toolbox_favs',JSON.stringify(favs));
+  try{localStorage.setItem('toolbox_favs',JSON.stringify(favs))}catch(e){console.warn('localStorage save failed:',e)}
   renderFavs();
 }
 function renderFavs(){
@@ -1960,20 +1994,22 @@ document.querySelectorAll('.ni[data-t]').forEach(function(el){
 });
 
 // ===== 深色/浅色模式 =====
-var isLight=localStorage.getItem('toolbox_theme')==='light';
+var isLight=false;
+try{isLight=localStorage.getItem('toolbox_theme')==='light'}catch(e){}
 function toggleTheme(){
   isLight=!isLight;
   document.body.classList.toggle('light',isLight);
   document.getElementById('themeBtn').textContent=isLight?'☀️':'🌙';
-  localStorage.setItem('toolbox_theme',isLight?'light':'dark');
+  try{localStorage.setItem('toolbox_theme',isLight?'light':'dark')}catch(e){}
 }
 if(isLight){document.body.classList.add('light');setTimeout(function(){document.getElementById('themeBtn').textContent='☀️'},100)}
 
 // ===== 使用统计 =====
-var stats=JSON.parse(localStorage.getItem('toolbox_stats')||'{}');
+var stats={};
+try{stats=JSON.parse(localStorage.getItem('toolbox_stats')||'{}')}catch(e){}
 function recordUsage(tool){
   stats[tool]=(stats[tool]||0)+1;
-  localStorage.setItem('toolbox_stats',JSON.stringify(stats));
+  try{localStorage.setItem('toolbox_stats',JSON.stringify(stats))}catch(e){}
 }
 function sortByUsage(){
   document.querySelectorAll('.nav-g').forEach(function(group){
@@ -2044,12 +2080,41 @@ async function clearTraces(){
   }catch(e){alert('清除完成（部分功能可能需要手动清除）')}
 }
 
+// ===== 隐私声明 =====
+function showPrivacy(){
+  var msg='🔒 隐私声明\n\n'+
+    '本工具箱所有功能均在您的浏览器本地运行，\n'+
+    '不会向任何服务器发送您的文件或数据。\n\n'+
+    '• 文件转换、图片处理、音视频处理 → 全部在本地完成\n'+
+    '• 不收集、不存储、不传输任何个人信息\n'+
+    '• 本地存储（localStorage）仅保存您的偏好设置和使用统计\n'+
+    '• 第三方 CDN 仅用于加载开源工具库，不追踪用户行为\n\n'+
+    '如有疑问，欢迎反馈。';
+  alert(msg);
+}
+
+// ===== 全局错误边界 =====
+window.onerror=function(msg,url,line,col,error){
+  console.error('Global error:',msg,url,line,col,error);
+  var el=document.querySelector('.cnt');
+  if(el){
+    var errDiv=document.createElement('div');
+    errDiv.style.cssText='background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:14px;margin-bottom:14px;font-size:.85rem';
+    errDiv.innerHTML='<span style="color:var(--red);font-weight:600">⚠️ 发生了一个错误</span><br><span style="color:var(--dim);font-size:.78rem">'+esc(String(msg))+'</span><br><button class="btn bo bs" style="margin-top:8px" onclick="location.reload()">刷新页面</button>';
+    el.prepend(errDiv);
+  }
+  return false;
+};
+window.addEventListener('unhandledrejection',function(e){
+  console.error('Unhandled rejection:',e.reason);
+});
+
 // ===== Service Worker =====
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').then(function(r){console.log('SW registered, will self-destruct')})}
 </script>
 
 <div class="footer-bar" style="position:fixed;bottom:0;left:0;right:0;text-align:center;padding:8px 20px;font-size:0.72rem;color:rgba(136,136,160,0.5);line-height:1.6;background:rgba(15,15,19,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:50;border-top:1px solid rgba(42,42,61,0.2)">
-  <span>📌 所有工具本地运行，数据无痕 | 网页开发：刘奕赫 齐鲁师范体育学院 学号：2024146088 | 如有问题欢迎反馈</span>
+  <span>📌 所有工具均在浏览器本地运行，不向服务器发送任何数据 | 网页开发：刘奕赫 齐鲁师范体育学院 | <a href="javascript:void(0)" onclick="showPrivacy()" style="color:rgba(136,136,160,0.7);text-decoration:underline" aria-label="查看隐私声明">隐私声明</a></span>
 </div>
 <div class="page-loader" id="pageLoader">
   <div class="spinner"></div>
