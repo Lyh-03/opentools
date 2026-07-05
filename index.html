@@ -70,6 +70,14 @@ a{color:var(--accent2);text-decoration:none}
 <div class="overlay" id="ov" onclick="tSidebar()"></div>
 <nav class="sidebar" id="sb">
   <div class="sb-hd"><h1>🛠️ 体院办公</h1><p>所有工具本地运行，数据无留痕</p><p style="margin-top:6px;font-size:.68rem;color:var(--accent2)">此工具箱主要服务于Qlnu-体育学院各级办公室</p></div>
+    <div class="nav-g">
+    <div class="nav-l">音视频处理</div>
+    <div class="ni" data-t="v2a"><span class="ic">🎵</span>视频提取音频</div>
+    <div class="ni" data-t="acv"><span class="ic">🔄</span>音频格式转换</div>
+    <div class="ni" data-t="vcv"><span class="ic">🎬</span>视频格式转换</div>
+    <div class="ni" data-t="vcut"><span class="ic">✂️</span>视频剪切</div>
+    <div class="ni" data-t="vframe"><span class="ic">🖼️</span>视频提取帧图片</div>
+  </div>
   <div class="nav-g">
     <div class="nav-l">压缩</div>
     <div class="ni on" data-t="zip"><span class="ic">📦</span>ZIP 压缩/解压</div>
@@ -545,16 +553,118 @@ console.log('Hi');
       </div>
     </div>
 
+    <!-- 视频提取音频 -->
+    <div class="tp" id="p-v2a">
+      <div class="sec">
+        <div class="st">🎵 视频提取音频</div>
+        <div class="dz" id="v2a-dz"><div class="big">🎵</div><p>选择视频文件（MP4/WebM/MOV/AVI）</p></div>
+        <input type="file" id="v2a-f" accept="video/*" hidden>
+        <div id="v2a-info" style="margin-top:10px;font-size:.85rem"></div>
+      </div>
+      <div class="sec">
+        <div class="st">⚙️ 输出设置</div>
+        <div class="row">
+          <div><label>音频格式</label><select id="v2a-fmt"><option value="mp3">MP3</option><option value="wav">WAV</option><option value="aac">AAC</option><option value="ogg">OGG</option><option value="flac">FLAC</option></select></div>
+        </div>
+        <button class="btn bp" style="margin-top:12px" id="v2a-btn" onclick="v2aGo()">🎵 提取音频</button>
+        <div id="v2a-st" style="font-size:.78rem;color:var(--dim);margin-top:6px"></div>
+        <div id="v2a-res" style="margin-top:10px"></div>
+      </div>
+    </div>
+
+    <!-- 音频格式转换 -->
+    <div class="tp" id="p-acv">
+      <div class="sec">
+        <div class="st">🔄 音频格式转换</div>
+        <div class="dz" id="acv-dz"><div class="big">🔄</div><p>选择音频文件</p></div>
+        <input type="file" id="acv-f" accept="audio/*" hidden>
+        <div id="acv-info" style="margin-top:10px;font-size:.85rem"></div>
+      </div>
+      <div class="sec">
+        <div class="st">⚙️ 输出设置</div>
+        <div class="row">
+          <div><label>目标格式</label><select id="acv-fmt"><option value="mp3">MP3</option><option value="wav">WAV</option><option value="aac">AAC</option><option value="ogg">OGG</option><option value="flac">FLAC</option></select></div>
+        </div>
+        <button class="btn bp" style="margin-top:12px" id="acv-btn" onclick="acvGo()">🔄 转换</button>
+        <div id="acv-st" style="font-size:.78rem;color:var(--dim);margin-top:6px"></div>
+        <div id="acv-res" style="margin-top:10px"></div>
+      </div>
+    </div>
+
+    <!-- 视频格式转换 -->
+    <div class="tp" id="p-vcv">
+      <div class="sec">
+        <div class="st">🎬 视频格式转换</div>
+        <div class="dz" id="vcv-dz"><div class="big">🎬</div><p>选择视频文件</p></div>
+        <input type="file" id="vcv-f" accept="video/*" hidden>
+        <div id="vcv-info" style="margin-top:10px;font-size:.85rem"></div>
+      </div>
+      <div class="sec">
+        <div class="st">⚙️ 输出设置</div>
+        <div class="row">
+          <div><label>目标格式</label><select id="vcv-fmt"><option value="mp4">MP4</option><option value="webm">WebM</option><option value="avi">AVI</option><option value="mov">MOV</option></select></div>
+          <div><label>分辨率</label><select id="vcv-res"><option value="">原始</option><option value="1920:-2">1080p</option><option value="1280:-2">720p</option><option value="854:-2">480p</option></select></div>
+        </div>
+        <button class="btn bp" style="margin-top:12px" id="vcv-btn" onclick="vcvGo()">🎬 转换</button>
+        <div id="vcv-st" style="font-size:.78rem;color:var(--dim);margin-top:6px"></div>
+        <div id="vcv-res" style="margin-top:10px"></div>
+      </div>
+    </div>
+
+    <!-- 视频剪切 -->
+    <div class="tp" id="p-vcut">
+      <div class="sec">
+        <div class="st">✂️ 视频剪切</div>
+        <div class="dz" id="vcut-dz"><div class="big">✂️</div><p>选择视频文件</p></div>
+        <input type="file" id="vcut-f" accept="video/*" hidden>
+        <div id="vcut-info" style="margin-top:10px;font-size:.85rem"></div>
+      </div>
+      <div class="sec">
+        <div class="st">⏱️ 设置时间段</div>
+        <div class="row">
+          <div><label>开始时间（秒）</label><input type="number" id="vcut-s" value="0" min="0"></div>
+          <div><label>结束时间（秒）</label><input type="number" id="vcut-e" value="10" min="0"></div>
+          <div><label>格式</label><select id="vcut-fmt"><option value="mp4">MP4</option><option value="webm">WebM</option></select></div>
+        </div>
+        <button class="btn bp" style="margin-top:12px" id="vcut-btn" onclick="vcutGo()">✂️ 剪切</button>
+        <div id="vcut-st" style="font-size:.78rem;color:var(--dim);margin-top:6px"></div>
+        <div id="vcut-res" style="margin-top:10px"></div>
+      </div>
+    </div>
+
+    <!-- 视频提取帧 -->
+    <div class="tp" id="p-vframe">
+      <div class="sec">
+        <div class="st">🖼️ 视频提取帧图片</div>
+        <div class="dz" id="vframe-dz"><div class="big">🖼️</div><p>选择视频文件</p></div>
+        <input type="file" id="vframe-f" accept="video/*" hidden>
+        <div id="vframe-info" style="margin-top:10px;font-size:.85rem"></div>
+      </div>
+      <div class="sec">
+        <div class="st">⚙️ 设置</div>
+        <div class="row">
+          <div><label>提取方式</label><select id="vframe-mode"><option value="time">指定时间点</option><option value="every">每隔N秒</option></select></div>
+          <div><label>时间点/间隔（秒）</label><input type="number" id="vframe-val" value="1" min="0.1" step="0.1"></div>
+          <div><label>格式</label><select id="vframe-fmt"><option value="png">PNG</option><option value="jpg">JPEG</option></select></div>
+        </div>
+        <button class="btn bp" style="margin-top:12px" id="vframe-btn" onclick="vframeGo()">🖼️ 提取</button>
+        <div id="vframe-st" style="font-size:.78rem;color:var(--dim);margin-top:6px"></div>
+        <div id="vframe-res" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px"></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/util.js"></script>
 <script>
 // ===== Navigation =====
-var titles={imgcv:'图片格式转换',pdf:'图片转 PDF',word:'Word 文档转换',excel:'Excel 表格转换',md:'Markdown 编辑器',csv:'CSV ↔ JSON',txt2pdf:'文本转 PDF',img2base:'图片转 Base64',img2ico:'图片转 ICO',imgmerge:'图片拼接',txt2img:'文字转图片',comp:'图片压缩',resize:'图片缩放',wm:'图片加水印',cp:'颜色拾取',ocr:'OCR 文字识别',qr:'二维码生成',b64:'Base64 编解码',hash:'哈希计算',jf:'JSON 格式化',re:'正则测试',diff:'文本对比',url:'URL 编解码',ts:'时间戳转换',zip:'ZIP 压缩'};
-var descs={imgcv:'PNG/JPG/WebP/BMP 互转',pdf:'多张图片合并为 PDF',word:'Word ↔ HTML/文本/Markdown/PDF',excel:'Excel ↔ CSV/JSON/HTML/文本',md:'实时预览，导出 HTML',csv:'CSV 与 JSON 互转',txt2pdf:'输入文字生成 PDF 打印/保存',img2base:'图片转为 Base64 编码字符串',img2ico:'生成网站 favicon 图标',imgmerge:'多张图片拼接成一张',txt2img:'把文字做成图片',comp:'调整质量压缩图片',resize:'按尺寸缩放图片',wm:'给图片添加文字水印',cp:'拾取颜色 HEX/RGB/HSL',ocr:'本地识别图片文字',qr:'生成二维码并下载',b64:'文本与 Base64 互转',hash:'SHA-1/SHA-256',jf:'格式化或压缩 JSON',re:'正则在线测试',diff:'高亮文本差异',url:'URL 编码解码',ts:'时间戳与日期互转',zip:'压缩文件为 ZIP'};
+var titles={imgcv:'图片格式转换',pdf:'图片转 PDF',word:'Word 文档转换',excel:'Excel 表格转换',md:'Markdown 编辑器',csv:'CSV ↔ JSON',txt2pdf:'文本转 PDF',img2base:'图片转 Base64',img2ico:'图片转 ICO',imgmerge:'图片拼接',txt2img:'文字转图片',v2a:'视频提取音频',acv:'音频格式转换',vcv:'视频格式转换',vcut:'视频剪切',vframe:'视频提取帧图片',comp:'图片压缩',resize:'图片缩放',wm:'图片加水印',cp:'颜色拾取',ocr:'OCR 文字识别',qr:'二维码生成',b64:'Base64 编解码',hash:'哈希计算',jf:'JSON 格式化',re:'正则测试',diff:'文本对比',url:'URL 编解码',ts:'时间戳转换',zip:'ZIP 压缩'};
+var descs={imgcv:'PNG/JPG/WebP/BMP 互转',pdf:'多张图片合并为 PDF',word:'Word ↔ HTML/文本/Markdown/PDF',excel:'Excel ↔ CSV/JSON/HTML/文本',md:'实时预览，导出 HTML',csv:'CSV 与 JSON 互转',txt2pdf:'输入文字生成 PDF 打印/保存',img2base:'图片转为 Base64 编码字符串',img2ico:'生成网站 favicon 图标',imgmerge:'多张图片拼接成一张',txt2img:'把文字做成图片',v2a:'从视频中提取音频（MP3/WAV/OGG/FLAC/AAC）',acv:'音频格式互转（MP3/WAV/OGG/FLAC/AAC）',vcv:'视频格式互转（MP4/WebM/AVI/MOV）',vcut:'截取视频片段',vframe:'从视频中提取帧图片',comp:'调整质量压缩图片',resize:'按尺寸缩放图片',wm:'给图片添加文字水印',cp:'拾取颜色 HEX/RGB/HSL',ocr:'本地识别图片文字',qr:'生成二维码并下载',b64:'文本与 Base64 互转',hash:'SHA-1/SHA-256',jf:'格式化或压缩 JSON',re:'正则在线测试',diff:'高亮文本差异',url:'URL 编码解码',ts:'时间戳与日期互转',zip:'压缩文件为 ZIP'};
 document.querySelectorAll('.ni').forEach(function(el){
   el.onclick=function(){
     document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('on')});
@@ -1251,6 +1361,198 @@ function zipGo(){
     var a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;a.click();
   });
   alert('已开始下载 '+zipFiles.length+' 个文件（如需打包为 ZIP 请使用桌面工具）');
+}
+
+// ===== FFmpeg 音视频处理 =====
+var ffmpegInstance=null;
+var ffmpegLoaded=false;
+async function initFFmpeg(){
+  if(ffmpegLoaded)return true;
+  try{
+    var FFmpeg=window.FFmpeg;
+    var Util=window.FFmpegUtil;
+    ffmpegInstance=new FFmpeg.FFmpeg();
+    ffmpegInstance.on('log',function(e){console.log(e)});
+    ffmpegInstance.on('progress',function(e){
+      var pct=Math.round((e.progress||0)*100);
+      document.querySelectorAll('.ff-st').forEach(function(el){el.textContent='处理中... '+pct+'%'})
+    });
+    var baseURL='https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
+    await ffmpegInstance.load({
+      coreURL:await Util.toBlobURL(baseURL+'/ffmpeg-core.js','text/javascript'),
+      wasmURL:await Util.toBlobURL(baseURL+'/ffmpeg-core.wasm','application/wasm')
+    });
+    ffmpegLoaded=true;
+    return true;
+  }catch(e){console.error('FFmpeg load error:',e);return false}
+}
+function setFFStatus(id,txt){var el=document.getElementById(id);if(el)el.textContent=txt}
+function setFFBtn(id,disabled,txt){var el=document.getElementById(id);if(el){el.disabled=disabled;el.textContent=txt}}
+
+// 视频提取音频
+var v2aFile=null;
+setupDz('v2a-dz','v2a-f',function(f){
+  v2aFile=f[0];
+  document.getElementById('v2a-info').innerHTML='<span class="ok">✓</span> '+v2aFile.name+' ('+(v2aFile.size/1024/1024).toFixed(1)+'MB)';
+});
+async function v2aGo(){
+  if(!v2aFile){alert('请先选择视频');return}
+  setFFBtn('v2a-btn',true,'⏳ 加载引擎...');setFFStatus('v2a-st','首次使用需下载约 20MB 引擎，请耐心等待...');
+  if(!(await initFFmpeg())){setFFBtn('v2a-btn',false,'🎵 提取音频');setFFStatus('v2a-st','引擎加载失败');return}
+  var fmt=document.getElementById('v2a-fmt').value;
+  var extMap={mp3:'mp3',wav:'wav',aac:'aac',ogg:'ogg',flac:'flac'};
+  var argsMap={mp3:['-vn','-acodec','libmp3lame','-q:a','2'],wav:['-vn','-acodec','pcm_s16le'],aac:['-vn','-acodec','aac','-b:a','192k'],ogg:['-vn','-acodec','libvorbis','-q:a','4'],flac:['-vn','-acodec','flac']};
+  try{
+    setFFBtn('v2a-btn',true,'⏳ 转换中...');setFFStatus('v2a-st','正在提取音频...');
+    var data=await v2aFile.arrayBuffer();
+    await ffmpegInstance.writeFile('input',new Uint8Array(data));
+    await ffmpegInstance.exec(['-i','input'].concat(argsMap[fmt],['output.'+extMap[fmt]]));
+    var out=await ffmpegInstance.readFile('output.'+extMap[fmt]);
+    var blob=new Blob([out.buffer],{type:'audio/'+extMap[fmt]});
+    var url=URL.createObjectURL(blob);
+    var el=document.getElementById('v2a-res');
+    el.innerHTML='<span class="ok">✓</span> 提取完成！<audio controls src="'+url+'" style="display:block;margin-top:6px;width:100%"></audio><a href="'+url+'" download="'+v2aFile.name.replace(/\.[^.]+$/,'.'+extMap[fmt])+'"><button class="btn bo bs" style="margin-top:6px">💾 下载音频</button></a>';
+    await ffmpegInstance.deleteFile('input');await ffmpegInstance.deleteFile('output.'+extMap[fmt]);
+  }catch(e){setFFStatus('v2a-st','错误: '+e.message)}
+  setFFBtn('v2a-btn',false,'🎵 提取音频');
+}
+
+// 音频格式转换
+var acvFile=null;
+setupDz('acv-dz','acv-f',function(f){
+  acvFile=f[0];
+  document.getElementById('acv-info').innerHTML='<span class="ok">✓</span> '+acvFile.name+' ('+(acvFile.size/1024/1024).toFixed(1)+'MB)';
+});
+async function acvGo(){
+  if(!acvFile){alert('请先选择音频');return}
+  setFFBtn('acv-btn',true,'⏳ 加载引擎...');setFFStatus('acv-st','首次使用需下载约 20MB 引擎...');
+  if(!(await initFFmpeg())){setFFBtn('acv-btn',false,'🔄 转换');setFFStatus('acv-st','引擎加载失败');return}
+  var fmt=document.getElementById('acv-fmt').value;
+  var extMap={mp3:'mp3',wav:'wav',aac:'aac',ogg:'ogg',flac:'flac'};
+  var argsMap={mp3:['-acodec','libmp3lame','-q:a','2'],wav:['-acodec','pcm_s16le'],aac:['-acodec','aac','-b:a','192k'],ogg:['-acodec','libvorbis','-q:a','4'],flac:['-acodec','flac']};
+  try{
+    setFFBtn('acv-btn',true,'⏳ 转换中...');setFFStatus('acv-st','正在转换...');
+    var data=await acvFile.arrayBuffer();
+    await ffmpegInstance.writeFile('input',new Uint8Array(data));
+    await ffmpegInstance.exec(['-i','input'].concat(argsMap[fmt],['output.'+extMap[fmt]]));
+    var out=await ffmpegInstance.readFile('output.'+extMap[fmt]);
+    var blob=new Blob([out.buffer],{type:'audio/'+extMap[fmt]});
+    var url=URL.createObjectURL(blob);
+    var el=document.getElementById('acv-res');
+    el.innerHTML='<span class="ok">✓</span> 转换完成！<audio controls src="'+url+'" style="display:block;margin-top:6px;width:100%"></audio><a href="'+url+'" download="'+acvFile.name.replace(/\.[^.]+$/,'.'+extMap[fmt])+'"><button class="btn bo bs" style="margin-top:6px">💾 下载</button></a>';
+    await ffmpegInstance.deleteFile('input');await ffmpegInstance.deleteFile('output.'+extMap[fmt]);
+  }catch(e){setFFStatus('acv-st','错误: '+e.message)}
+  setFFBtn('acv-btn',false,'🔄 转换');
+}
+
+// 视频格式转换
+var vcvFile=null;
+setupDz('vcv-dz','vcv-f',function(f){
+  vcvFile=f[0];
+  document.getElementById('vcv-info').innerHTML='<span class="ok">✓</span> '+vcvFile.name+' ('+(vcvFile.size/1024/1024).toFixed(1)+'MB)';
+});
+async function vcvGo(){
+  if(!vcvFile){alert('请先选择视频');return}
+  setFFBtn('vcv-btn',true,'⏳ 加载引擎...');setFFStatus('vcv-st','首次使用需下载约 20MB 引擎...');
+  if(!(await initFFmpeg())){setFFBtn('vcv-btn',false,'🎬 转换');setFFStatus('vcv-st','引擎加载失败');return}
+  var fmt=document.getElementById('vcv-fmt').value;
+  var res=document.getElementById('vcv-res').value;
+  try{
+    setFFBtn('vcv-btn',true,'⏳ 转换中...');setFFStatus('vcv-st','正在转换视频...');
+    var data=await vcvFile.arrayBuffer();
+    await ffmpegInstance.writeFile('input',new Uint8Array(data));
+    var args=['-i','input'];
+    if(res)args=args.concat(['-vf','scale='+res]);
+    if(fmt==='webm')args=args.concat(['-c:v','libvpx','-c:a','libvorbis']);
+    else args=args.concat(['-c:v','libx264','-c:a','aac']);
+    args.push('output.'+fmt);
+    await ffmpegInstance.exec(args);
+    var out=await ffmpegInstance.readFile('output.'+fmt);
+    var mime=fmt==='webm'?'video/webm':fmt==='mp4'?'video/mp4':'video/'+fmt;
+    var blob=new Blob([out.buffer],{type:mime});
+    var url=URL.createObjectURL(blob);
+    var el=document.getElementById('vcv-res');
+    el.innerHTML='<span class="ok">✓</span> 转换完成！<video controls src="'+url+'" style="max-width:100%;border-radius:10px;margin-top:6px"></video><a href="'+url+'" download="'+vcvFile.name.replace(/\.[^.]+$/,'.'+fmt)+'"><button class="btn bo bs" style="margin-top:6px">💾 下载视频</button></a>';
+    await ffmpegInstance.deleteFile('input');await ffmpegInstance.deleteFile('output.'+fmt);
+  }catch(e){setFFStatus('vcv-st','错误: '+e.message)}
+  setFFBtn('vcv-btn',false,'🎬 转换');
+}
+
+// 视频剪切
+var vcutFile=null;
+setupDz('vcut-dz','vcut-f',function(f){
+  vcutFile=f[0];
+  document.getElementById('vcut-info').innerHTML='<span class="ok">✓</span> '+vcutFile.name+' ('+(vcutFile.size/1024/1024).toFixed(1)+'MB)';
+});
+async function vcutGo(){
+  if(!vcutFile){alert('请先选择视频');return}
+  setFFBtn('vcut-btn',true,'⏳ 加载引擎...');setFFStatus('vcut-st','首次使用需下载约 20MB 引擎...');
+  if(!(await initFFmpeg())){setFFBtn('vcut-btn',false,'✂️ 剪切');setFFStatus('vcut-st','引擎加载失败');return}
+  var start=document.getElementById('vcut-s').value;
+  var end=document.getElementById('vcut-e').value;
+  var fmt=document.getElementById('vcut-fmt').value;
+  try{
+    setFFBtn('vcut-btn',true,'⏳ 剪切中...');setFFStatus('vcut-st','正在剪切...');
+    var data=await vcutFile.arrayBuffer();
+    await ffmpegInstance.writeFile('input',new Uint8Array(data));
+    var args=['-i','input','-ss',start,'-to',end,'-c','copy'];
+    if(fmt==='webm')args=args.concat(['-c:v','libvpx','-c:a','libvorbis']);
+    args.push('output.'+fmt);
+    await ffmpegInstance.exec(args);
+    var out=await ffmpegInstance.readFile('output.'+fmt);
+    var blob=new Blob([out.buffer],{type:'video/'+fmt});
+    var url=URL.createObjectURL(blob);
+    var el=document.getElementById('vcut-res');
+    el.innerHTML='<span class="ok">✓</span> 剪切完成！<video controls src="'+url+'" style="max-width:100%;border-radius:10px;margin-top:6px"></video><a href="'+url+'" download="cut_'+vcutFile.name.replace(/\.[^.]+$/,'.'+fmt)+'"><button class="btn bo bs" style="margin-top:6px">💾 下载</button></a>';
+    await ffmpegInstance.deleteFile('input');await ffmpegInstance.deleteFile('output.'+fmt);
+  }catch(e){setFFStatus('vcut-st','错误: '+e.message)}
+  setFFBtn('vcut-btn',false,'✂️ 剪切');
+}
+
+// 视频提取帧
+var vframeFile=null;
+setupDz('vframe-dz','vframe-f',function(f){
+  vframeFile=f[0];
+  document.getElementById('vframe-info').innerHTML='<span class="ok">✓</span> '+vframeFile.name+' ('+(vframeFile.size/1024/1024).toFixed(1)+'MB)';
+});
+async function vframeGo(){
+  if(!vframeFile){alert('请先选择视频');return}
+  setFFBtn('vframe-btn',true,'⏳ 加载引擎...');setFFStatus('vframe-st','首次使用需下载约 20MB 引擎...');
+  if(!(await initFFmpeg())){setFFBtn('vframe-btn',false,'🖼️ 提取');setFFStatus('vframe-st','引擎加载失败');return}
+  var mode=document.getElementById('vframe-mode').value;
+  var val=parseFloat(document.getElementById('vframe-val').value);
+  var fmt=document.getElementById('vframe-fmt').value;
+  try{
+    setFFBtn('vframe-btn',true,'⏳ 提取中...');setFFStatus('vframe-st','正在提取帧...');
+    var data=await vframeFile.arrayBuffer();
+    await ffmpegInstance.writeFile('input',new Uint8Array(data));
+    var el=document.getElementById('vframe-res');el.innerHTML='';
+    if(mode==='time'){
+      await ffmpegInstance.exec(['-i','input','-ss',String(val),'-frames:v','1','output.'+fmt]);
+      var out=await ffmpegInstance.readFile('output.'+fmt);
+      var blob=new Blob([out.buffer],{type:'image/'+fmt});
+      var url=URL.createObjectURL(blob);
+      el.innerHTML='<img src="'+url+'" style="max-height:200px;border-radius:8px;border:1px solid var(--border)"><br><a href="'+url+'" download="frame_'+val+'s.'+fmt+'"><button class="btn bo bs" style="margin-top:6px">💾 下载</button></a>';
+      await ffmpegInstance.deleteFile('output.'+fmt);
+    }else{
+      var fps=1/val;
+      await ffmpegInstance.exec(['-i','input','-vf','fps='+fps,'-frames:v','10','output_%03d.'+fmt]);
+      for(var i=1;i<=10;i++){
+        var fname='output_'+String(i).padStart(3,'0')+'.'+fmt;
+        try{
+          var out=await ffmpegInstance.readFile(fname);
+          var blob=new Blob([out.buffer],{type:'image/'+fmt});
+          var url=URL.createObjectURL(blob);
+          var img=document.createElement('img');img.src=url;img.style.cssText='max-height:150px;border-radius:8px;border:1px solid var(--border)';
+          el.appendChild(img);
+          await ffmpegInstance.deleteFile(fname);
+        }catch(e){break}
+      }
+    }
+    await ffmpegInstance.deleteFile('input');
+    setFFStatus('vframe-st','提取完成');
+  }catch(e){setFFStatus('vframe-st','错误: '+e.message)}
+  setFFBtn('vframe-btn',false,'🖼️ 提取');
 }
 
 // ===== Service Worker =====
