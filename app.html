@@ -80,10 +80,21 @@ a{color:var(--accent2);text-decoration:none}
     <div class="nav-l">文件转换</div>
     <div class="ni on" data-t="imgcv"><span class="ic">🖼️</span>图片格式转换</div>
     <div class="ni" data-t="pdf"><span class="ic">📄</span>图片转 PDF</div>
-    <div class="ni" data-t="word"><span class="ic">📘</span>Word 文档转换</div>
-    <div class="ni" data-t="excel"><span class="ic">📗</span>Excel 表格转换</div>
+    <div class="ni" data-t="word2html"><span class="ic">📘</span>Word 转 HTML</div>
+    <div class="ni" data-t="word2txt"><span class="ic">📘</span>Word 转文本</div>
+    <div class="ni" data-t="word2md"><span class="ic">📘</span>Word 转 Markdown</div>
+    <div class="ni" data-t="word2pdf"><span class="ic">📘</span>Word 转 PDF</div>
+    <div class="ni" data-t="txt2word"><span class="ic">📝</span>文本 转 Word</div>
+    <div class="ni" data-t="html2word"><span class="ic">📝</span>HTML 转 Word</div>
+    <div class="ni" data-t="xls2csv"><span class="ic">📗</span>Excel 转 CSV</div>
+    <div class="ni" data-t="xls2json"><span class="ic">📗</span>Excel 转 JSON</div>
+    <div class="ni" data-t="xls2html"><span class="ic">📗</span>Excel 转 HTML</div>
+    <div class="ni" data-t="xls2txt"><span class="ic">📗</span>Excel 转文本</div>
+    <div class="ni" data-t="csv2xls"><span class="ic">📊</span>CSV 转 Excel</div>
+    <div class="ni" data-t="json2xls"><span class="ic">📊</span>JSON 转 Excel</div>
     <div class="ni" data-t="md"><span class="ic">📝</span>Markdown 编辑器</div>
-    <div class="ni" data-t="csv"><span class="ic">📊</span>CSV ↔ JSON</div>
+    <div class="ni" data-t="csv2json"><span class="ic">📊</span>CSV 转 JSON</div>
+    <div class="ni" data-t="json2csv"><span class="ic">📊</span>JSON 转 CSV</div>
     <div class="ni" data-t="txt2pdf"><span class="ic">📃</span>文本转 PDF</div>
     <div class="ni" data-t="img2base"><span class="ic">🔤</span>图片转 Base64</div>
     <div class="ni" data-t="img2ico"><span class="ic">🔷</span>图片转 ICO</div>
@@ -203,79 +214,142 @@ console.log('Hi');
       </div>
     </div>
 
-    <!-- CSV JSON -->
-    <div class="tp" id="p-csv">
+    <!-- CSV 转 JSON -->
+    <div class="tp" id="p-csv2json">
       <div class="sec">
-        <div class="st">📊 CSV ↔ JSON</div>
-        <div style="display:flex;gap:8px;margin-bottom:10px">
-          <span class="chip on" id="c2j" onclick="csvM('c2j')">CSV→JSON</span>
-          <span class="chip" id="j2c" onclick="csvM('j2c')">JSON→CSV</span>
-        </div>
-        <div class="row">
-          <div style="flex:1;min-width:250px"><label id="ci-l">输入 CSV</label><textarea id="ci" style="min-height:160px;font-family:monospace" placeholder="name,age,city&#10;Alice,30,Beijing"></textarea></div>
-          <div style="flex:1;min-width:250px"><label id="co-l">输出</label><textarea id="co" style="min-height:160px;font-family:monospace" readonly></textarea></div>
-        </div>
-        <div style="margin-top:10px;display:flex;gap:8px">
-          <button class="btn bp bs" onclick="csvGo()">转换</button>
-          <button class="btn bo bs" onclick="cpTxt('co')">复制</button>
-        </div>
+        <div class="st">📊 CSV 转 JSON</div>
+        <label>粘贴 CSV 数据</label>
+        <textarea id="c2j-in" style="min-height:180px;font-family:monospace" placeholder="name,age,city&#10;Alice,30,Beijing"></textarea>
+        <button class="btn bp" style="margin-top:12px" onclick="csvToJson2('c2j-in','c2j-out')">转换</button>
+        <div class="rb" id="c2j-out" style="min-height:80px;margin-top:10px"></div>
+        <button class="btn bo bs" style="margin-top:6px" onclick="cpTxt('c2j-out')">复制</button>
       </div>
     </div>
-
-    <!-- Word 文档转换 -->
-    <div class="tp" id="p-word">
+    <!-- JSON 转 CSV -->
+    <div class="tp" id="p-json2csv">
       <div class="sec">
-        <div class="st">📘 Word 文档转换</div>
-        <div class="dz" id="word-dz"><div class="big">📘</div><p>选择 .docx 文件</p></div>
-        <input type="file" id="word-f" accept=".docx" hidden>
-        <div id="word-info" style="margin-top:10px;font-size:.85rem"></div>
-      </div>
-      <div class="sec">
-        <div class="st">转换为</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn bp bs" onclick="wordTo('html')">📄 HTML 网页</button>
-          <button class="btn bp bs" onclick="wordTo('txt')">📃 纯文本</button>
-          <button class="btn bp bs" onclick="wordTo('md')">📝 Markdown</button>
-          <button class="btn bp bs" onclick="wordTo('pdf')">📕 PDF（打印）</button>
-        </div>
-        <div id="word-res" style="margin-top:12px"></div>
-      </div>
-      <div class="sec">
-        <div class="st">其他格式 → Word</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn bo bs" onclick="txtToWord()">📃 纯文本 → .docx</button>
-          <button class="btn bo bs" onclick="htmlToWord()">📄 HTML → .docx</button>
-        </div>
-        <div style="margin-top:10px"><label>输入内容</label><textarea id="word-in" style="min-height:120px" placeholder="输入要转成 Word 的文字或 HTML..."></textarea></div>
+        <div class="st">📊 JSON 转 CSV</div>
+        <label>粘贴 JSON 数组</label>
+        <textarea id="j2c-in" style="min-height:180px;font-family:monospace" placeholder='[{"name":"Alice","age":30},{"name":"Bob","age":25}]'></textarea>
+        <button class="btn bp" style="margin-top:12px" onclick="jsonToCsv2('j2c-in','j2c-out')">转换</button>
+        <div class="rb" id="j2c-out" style="min-height:80px;margin-top:10px"></div>
+        <button class="btn bo bs" style="margin-top:6px" onclick="cpTxt('j2c-out')">复制</button>
       </div>
     </div>
-
-    <!-- Excel 表格转换 -->
-    <div class="tp" id="p-excel">
+    <!-- Word 转 HTML -->
+    <div class="tp" id="p-word2html">
       <div class="sec">
-        <div class="st">📗 Excel 表格转换</div>
-        <div class="dz" id="xls-dz"><div class="big">📗</div><p>选择 .xlsx / .xls / .csv 文件</p></div>
-        <input type="file" id="xls-f" accept=".xlsx,.xls,.csv" hidden>
-        <div id="xls-info" style="margin-top:10px;font-size:.85rem"></div>
-        <div id="xls-preview" style="margin-top:10px;overflow:auto;max-height:300px"></div>
+        <div class="st">📘 Word 转 HTML</div>
+        <div class="dz" id="w2h-dz"><div class="big">📘</div><p>选择 .docx 文件</p></div>
+        <input type="file" id="w2h-f" accept=".docx" hidden>
+        <div id="w2h-info" style="margin-top:10px;font-size:.85rem"></div>
+        <button class="btn bp" style="margin-top:12px" onclick="wordConv('html','w2h-f','w2h-info')">转换并下载 HTML</button>
       </div>
+    </div>
+    <!-- Word 转文本 -->
+    <div class="tp" id="p-word2txt">
       <div class="sec">
-        <div class="st">转换为</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn bp bs" onclick="xlsTo('csv')">📊 CSV</button>
-          <button class="btn bp bs" onclick="xlsTo('json')">{ } JSON</button>
-          <button class="btn bp bs" onclick="xlsTo('txt')">📃 纯文本（制表符分隔）</button>
-          <button class="btn bp bs" onclick="xlsTo('html')">📄 HTML 表格</button>
-        </div>
-        <div id="xls-res" style="margin-top:12px"></div>
+        <div class="st">📘 Word 转纯文本</div>
+        <div class="dz" id="w2t-dz"><div class="big">📘</div><p>选择 .docx 文件</p></div>
+        <input type="file" id="w2t-f" accept=".docx" hidden>
+        <div id="w2t-info" style="margin-top:10px;font-size:.85rem"></div>
+        <button class="btn bp" style="margin-top:12px" onclick="wordConv('txt','w2t-f','w2t-info')">转换并下载 TXT</button>
       </div>
+    </div>
+    <!-- Word 转 Markdown -->
+    <div class="tp" id="p-word2md">
       <div class="sec">
-        <div class="st">其他格式 → Excel</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn bo bs" onclick="csvToXls()">📊 CSV → .xlsx</button>
-          <button class="btn bo bs" onclick="jsonToXls()">{ } JSON → .xlsx</button>
-        </div>
-        <div style="margin-top:10px"><label>输入内容</label><textarea id="xls-in" style="min-height:120px;font-family:monospace" placeholder="粘贴 CSV 或 JSON 数据..."></textarea></div>
+        <div class="st">📘 Word 转 Markdown</div>
+        <div class="dz" id="w2m-dz"><div class="big">📘</div><p>选择 .docx 文件</p></div>
+        <input type="file" id="w2m-f" accept=".docx" hidden>
+        <div id="w2m-info" style="margin-top:10px;font-size:.85rem"></div>
+        <button class="btn bp" style="margin-top:12px" onclick="wordConv('md','w2m-f','w2m-info')">转换并下载 Markdown</button>
+      </div>
+    </div>
+    <!-- Word 转 PDF -->
+    <div class="tp" id="p-word2pdf">
+      <div class="sec">
+        <div class="st">📘 Word 转 PDF</div>
+        <div class="dz" id="w2p-dz"><div class="big">📘</div><p>选择 .docx 文件</p></div>
+        <input type="file" id="w2p-f" accept=".docx" hidden>
+        <div id="w2p-info" style="margin-top:10px;font-size:.85rem"></div>
+        <button class="btn bp" style="margin-top:12px" onclick="wordConv('pdf','w2p-f','w2p-info')">生成 PDF（打印）</button>
+      </div>
+    </div>
+    <!-- 文本 转 Word -->
+    <div class="tp" id="p-txt2word">
+      <div class="sec">
+        <div class="st">📝 文本 转 Word</div>
+        <label>输入文本内容</label>
+        <textarea id="t2w-in" style="min-height:200px" placeholder="输入要转成 Word 的文字..."></textarea>
+        <button class="btn bp" style="margin-top:12px" onclick="txtToWord2()">下载 .docx</button>
+      </div>
+    </div>
+    <!-- HTML 转 Word -->
+    <div class="tp" id="p-html2word">
+      <div class="sec">
+        <div class="st">📝 HTML 转 Word</div>
+        <label>输入 HTML 代码</label>
+        <textarea id="h2w-in" style="min-height:200px;font-family:monospace" placeholder="<h1>标题</h1><p>段落</p>"></textarea>
+        <button class="btn bp" style="margin-top:12px" onclick="htmlToWord2()">下载 .docx</button>
+      </div>
+    </div>
+    <!-- Excel 转 CSV -->
+    <div class="tp" id="p-xls2csv">
+      <div class="sec">
+        <div class="st">📗 Excel 转 CSV</div>
+        <div class="dz" id="x2c-dz"><div class="big">📗</div><p>选择 .xlsx / .xls 文件</p></div>
+        <input type="file" id="x2c-f" accept=".xlsx,.xls" hidden>
+        <div id="x2c-info" style="margin-top:10px;font-size:.85rem"></div>
+        <button class="btn bp" style="margin-top:12px" onclick="xlsConv('csv','x2c-f','x2c-info')">转换并下载 CSV</button>
+      </div>
+    </div>
+    <!-- Excel 转 JSON -->
+    <div class="tp" id="p-xls2json">
+      <div class="sec">
+        <div class="st">📗 Excel 转 JSON</div>
+        <div class="dz" id="x2j-dz"><div class="big">📗</div><p>选择 .xlsx / .xls 文件</p></div>
+        <input type="file" id="x2j-f" accept=".xlsx,.xls" hidden>
+        <div id="x2j-info" style="margin-top:10px;font-size:.85rem"></div>
+        <button class="btn bp" style="margin-top:12px" onclick="xlsConv('json','x2j-f','x2j-info')">转换并下载 JSON</button>
+      </div>
+    </div>
+    <!-- Excel 转 HTML -->
+    <div class="tp" id="p-xls2html">
+      <div class="sec">
+        <div class="st">📗 Excel 转 HTML 表格</div>
+        <div class="dz" id="x2h-dz"><div class="big">📗</div><p>选择 .xlsx / .xls 文件</p></div>
+        <input type="file" id="x2h-f" accept=".xlsx,.xls" hidden>
+        <div id="x2h-info" style="margin-top:10px;font-size:.85rem"></div>
+        <button class="btn bp" style="margin-top:12px" onclick="xlsConv('html','x2h-f','x2h-info')">转换并下载 HTML</button>
+      </div>
+    </div>
+    <!-- Excel 转文本 -->
+    <div class="tp" id="p-xls2txt">
+      <div class="sec">
+        <div class="st">📗 Excel 转纯文本</div>
+        <div class="dz" id="x2t-dz"><div class="big">📗</div><p>选择 .xlsx / .xls 文件</p></div>
+        <input type="file" id="x2t-f" accept=".xlsx,.xls" hidden>
+        <div id="x2t-info" style="margin-top:10px;font-size:.85rem"></div>
+        <button class="btn bp" style="margin-top:12px" onclick="xlsConv('txt','x2t-f','x2t-info')">转换并下载 TXT</button>
+      </div>
+    </div>
+    <!-- CSV 转 Excel -->
+    <div class="tp" id="p-csv2xls">
+      <div class="sec">
+        <div class="st">📊 CSV 转 Excel</div>
+        <label>粘贴 CSV 数据</label>
+        <textarea id="c2x-in" style="min-height:180px;font-family:monospace" placeholder="name,age,city&#10;Alice,30,Beijing&#10;Bob,25,Shanghai"></textarea>
+        <button class="btn bp" style="margin-top:12px" onclick="csvToXls2('c2x-in')">下载 .xlsx</button>
+      </div>
+    </div>
+    <!-- JSON 转 Excel -->
+    <div class="tp" id="p-json2xls">
+      <div class="sec">
+        <div class="st">📊 JSON 转 Excel</div>
+        <label>粘贴 JSON 数组</label>
+        <textarea id="j2x-in" style="min-height:180px;font-family:monospace" placeholder='[{"name":"Alice","age":30},{"name":"Bob","age":25}]'></textarea>
+        <button class="btn bp" style="margin-top:12px" onclick="jsonToXls2('j2x-in')">下载 .xlsx</button>
       </div>
     </div>
 
@@ -684,8 +758,8 @@ console.log('Hi');
 <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/util.js"></script>
 <script>
 // ===== Navigation =====
-var titles={imgcv:'图片格式转换',pdf:'图片转 PDF',word:'Word 文档转换',excel:'Excel 表格转换',md:'Markdown 编辑器',csv:'CSV ↔ JSON',txt2pdf:'文本转 PDF',img2base:'图片转 Base64',img2ico:'图片转 ICO',imgmerge:'图片拼接',txt2img:'文字转图片',v2a:'视频提取音频',acv:'音频格式转换',vcv:'视频格式转换',vcut:'视频剪切',vframe:'视频提取帧图片',comp:'图片压缩',resize:'图片缩放',wm:'图片加水印',cp:'颜色拾取',ocr:'OCR 文字识别',qr:'二维码生成',b64:'Base64 编解码',hash:'哈希计算',jf:'JSON 格式化',re:'正则测试',diff:'文本对比',url:'URL 编解码',ts:'时间戳转换',zip:'ZIP 压缩'};
-var descs={imgcv:'PNG/JPG/WebP/BMP 互转',pdf:'多张图片合并为 PDF',word:'Word ↔ HTML/文本/Markdown/PDF',excel:'Excel ↔ CSV/JSON/HTML/文本',md:'实时预览，导出 HTML',csv:'CSV 与 JSON 互转',txt2pdf:'输入文字生成 PDF 打印/保存',img2base:'图片转为 Base64 编码字符串',img2ico:'生成网站 favicon 图标',imgmerge:'多张图片拼接成一张',txt2img:'把文字做成图片',v2a:'从视频中提取音频（MP3/WAV/OGG/FLAC/AAC）',acv:'音频格式互转（MP3/WAV/OGG/FLAC/AAC）',vcv:'视频格式互转（MP4/WebM/AVI/MOV）',vcut:'截取视频片段',vframe:'从视频中提取帧图片',comp:'调整质量压缩图片',resize:'按尺寸缩放图片',wm:'给图片添加文字水印',cp:'拾取颜色 HEX/RGB/HSL',ocr:'本地识别图片文字',qr:'生成二维码并下载',b64:'文本与 Base64 互转',hash:'SHA-1/SHA-256',jf:'格式化或压缩 JSON',re:'正则在线测试',diff:'高亮文本差异',url:'URL 编码解码',ts:'时间戳与日期互转',zip:'压缩文件为 ZIP'};
+var titles={imgcv:'图片格式转换',pdf:'图片转 PDF',word2html:'Word 转 HTML',word2txt:'Word 转文本',word2md:'Word 转 Markdown',word2pdf:'Word 转 PDF',txt2word:'文本 转 Word',html2word:'HTML 转 Word',xls2csv:'Excel 转 CSV',xls2json:'Excel 转 JSON',xls2html:'Excel 转 HTML',xls2txt:'Excel 转文本',csv2xls:'CSV 转 Excel',json2xls:'JSON 转 Excel',md:'Markdown 编辑器',csv2json:'CSV 转 JSON',json2csv:'JSON 转 CSV',txt2pdf:'文本转 PDF',img2base:'图片转 Base64',img2ico:'图片转 ICO',imgmerge:'图片拼接',txt2img:'文字转图片',v2a:'视频提取音频',acv:'音频格式转换',vcv:'视频格式转换',vcut:'视频剪切',vframe:'视频提取帧图片',comp:'图片压缩',resize:'图片缩放',wm:'图片加水印',cp:'颜色拾取',ocr:'OCR 文字识别',qr:'二维码生成',b64:'Base64 编解码',hash:'哈希计算',jf:'JSON 格式化',re:'正则测试',diff:'文本对比',url:'URL 编解码',ts:'时间戳转换',zip:'ZIP 压缩'};
+var descs={imgcv:'PNG/JPG/WebP/BMP 互转',pdf:'多张图片合并为 PDF',word2html:'将 .docx 转为 HTML 网页',word2txt:'将 .docx 转为纯文本',word2md:'将 .docx 转为 Markdown',word2pdf:'将 .docx 转为 PDF 打印',txt2word:'将纯文本转为 .docx',html2word:'将 HTML 转为 .docx',xls2csv:'将 Excel 转为 CSV',xls2json:'将 Excel 转为 JSON',xls2html:'将 Excel 转为 HTML 表格',xls2txt:'将 Excel 转为纯文本',csv2xls:'将 CSV 转为 .xlsx',json2xls:'将 JSON 转为 .xlsx',md:'实时预览，导出 HTML',csv2json:'将 CSV 转为 JSON',json2csv:'将 JSON 转为 CSV',txt2pdf:'输入文字生成 PDF',img2base:'图片转为 Base64',img2ico:'生成网站 favicon',imgmerge:'多张图片拼接成一张',txt2img:'把文字做成图片',v2a:'从视频中提取音频',acv:'音频格式互转',vcv:'视频格式互转',vcut:'截取视频片段',vframe:'提取帧图片',comp:'压缩图片体积',resize:'按尺寸缩放图片',wm:'添加文字水印',cp:'拾取颜色 HEX/RGB/HSL',ocr:'本地识别图片文字',qr:'生成二维码',b64:'文本与 Base64 互转',hash:'SHA-1/SHA-256',jf:'格式化或压缩 JSON',re:'正则在线测试',diff:'高亮文本差异',url:'URL 编码解码',ts:'时间戳转换',zip:'压缩文件为 ZIP'};
 document.querySelectorAll('.ni').forEach(function(el){
   el.onclick=function(){
     document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('on')});
@@ -824,177 +898,126 @@ function csvGo(){
   }catch(e){out.value='错误: '+e.message}
 }
 
-// ===== Word 转换 =====
-var wordFile=null;
-setupDz('word-dz','word-f',function(f){
-  wordFile=f[0];
-  document.getElementById('word-info').innerHTML='<span class="ok">✓</span> 已选择: '+wordFile.name+' ('+(wordFile.size/1024).toFixed(1)+'KB)';
-});
-function wordTo(fmt){
-  if(!wordFile){alert('请先选择 .docx 文件');return}
+// ===== Word 转换（单向） =====
+function wordConv(fmt,fileId,infoId){
+  var fi=document.getElementById(fileId);
+  if(!fi.files.length){alert('请先选择 .docx 文件');return}
+  var file=fi.files[0];
   var reader=new FileReader();
   reader.onload=async function(){
     try{
+      document.getElementById(infoId).innerHTML='<span class="ok">⏳</span> 转换中...';
       if(fmt==='html'){
         var result=await mammoth.convertToHtml({arrayBuffer:reader.result});
-        var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+wordFile.name+'</title><style>body{font-family:system-ui;max-width:800px;margin:40px auto;padding:0 20px;line-height:1.7}</style></head><body>'+result.value+'</body></html>';
-        dlBlob(html,wordFile.name.replace('.docx','.html'),'text/html');
-        document.getElementById('word-res').innerHTML='<span class="ok">✓</span> 已下载 HTML 文件';
+        var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+file.name+'</title><style>body{font-family:system-ui;max-width:800px;margin:40px auto;padding:0 20px;line-height:1.7}</style></head><body>'+result.value+'</body></html>';
+        dlBlob(html,file.name.replace('.docx','.html'),'text/html');
       }else if(fmt==='txt'){
         var result=await mammoth.extractRawText({arrayBuffer:reader.result});
-        dlBlob(result.value,wordFile.name.replace('.docx','.txt'),'text/plain');
-        document.getElementById('word-res').innerHTML='<span class="ok">✓</span> 已下载 TXT 文件';
+        dlBlob(result.value,file.name.replace('.docx','.txt'),'text/plain');
       }else if(fmt==='md'){
         var htmlResult=await mammoth.convertToHtml({arrayBuffer:reader.result});
-        var md=htmlResult.value
-          .replace(/<h1[^>]*>(.*?)<\/h1>/gi,'# $1\n')
-          .replace(/<h2[^>]*>(.*?)<\/h2>/gi,'## $1\n')
-          .replace(/<h3[^>]*>(.*?)<\/h3>/gi,'### $1\n')
-          .replace(/<strong[^>]*>(.*?)<\/strong>/gi,'**$1**')
-          .replace(/<em[^>]*>(.*?)<\/em>/gi,'*$1*')
-          .replace(/<p[^>]*>(.*?)<\/p>/gi,'$1\n\n')
-          .replace(/<li[^>]*>(.*?)<\/li>/gi,'- $1\n')
-          .replace(/<[^>]+>/g,'')
-          .replace(/\n{3,}/g,'\n\n')
-          .trim();
-        dlBlob(md,wordFile.name.replace('.docx','.md'),'text/markdown');
-        document.getElementById('word-res').innerHTML='<span class="ok">✓</span> 已下载 Markdown 文件';
+        var md=htmlResult.value.replace(/<h1[^>]*>(.*?)<\/h1>/gi,'# $1\n').replace(/<h2[^>]*>(.*?)<\/h2>/gi,'## $1\n').replace(/<h3[^>]*>(.*?)<\/h3>/gi,'### $1\n').replace(/<strong[^>]*>(.*?)<\/strong>/gi,'**$1**').replace(/<em[^>]*>(.*?)<\/em>/gi,'*$1*').replace(/<p[^>]*>(.*?)<\/p>/gi,'$1\n\n').replace(/<li[^>]*>(.*?)<\/li>/gi,'- $1\n').replace(/<[^>]+>/g,'').replace(/\n{3,}/g,'\n\n').trim();
+        dlBlob(md,file.name.replace('.docx','.md'),'text/markdown');
       }else if(fmt==='pdf'){
         var result=await mammoth.convertToHtml({arrayBuffer:reader.result});
         var w=window.open('','','width=800,height=600');
-        w.document.write('<!DOCTYPE html><html><head><title>'+wordFile.name+'</title><style>@page{size:A4;margin:20mm}body{font-family:system-ui;line-height:1.7}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ddd;padding:8px}img{max-width:100%}</style></head><body>'+result.value+'</body></html>');
-        w.document.close();
-        setTimeout(function(){w.print()},500);
+        w.document.write('<!DOCTYPE html><html><head><title>'+file.name+'</title><style>@page{size:A4;margin:20mm}body{font-family:system-ui;line-height:1.7}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ddd;padding:8px}img{max-width:100%}</style></head><body>'+result.value+'</body></html>');
+        w.document.close();setTimeout(function(){w.print()},500);
       }
-    }catch(e){document.getElementById('word-res').innerHTML='<span class="err">转换失败: '+e.message+'</span>'}
+      document.getElementById(infoId).innerHTML='<span class="ok">✓</span> 转换完成！';
+    }catch(e){document.getElementById(infoId).innerHTML='<span class="err">失败: '+e.message+'</span>'}
   };
-  reader.readAsArrayBuffer(wordFile);
+  reader.readAsArrayBuffer(file);
 }
-function txtToWord(){
-  var text=document.getElementById('word-in').value;
-  if(!text.trim()){alert('请输入内容');return}
-  // 创建简单 docx (XML 格式)
-  var xml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>';
-  text.split('\n').forEach(function(line){
-    xml+='<w:p><w:r><w:t xml:space="preserve">'+esc(line)+'</w:t></w:r></w:p>';
-  });
-  xml+='</w:body></w:document>';
-  // 使用 JSZip 打包成 docx
-  if(typeof JSZip!=='undefined'){
-    var zip=new JSZip();
-    zip.file('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
-    zip.file('_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
-    zip.file('word/_rels/document.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>');
-    zip.file('word/document.xml',xml);
-    zip.generateAsync({type:'blob'}).then(function(blob){
-      var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='output.docx';a.click();
-    });
-  }else{
-    // 降级：下载为 HTML
-    var html='<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>'+text.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')+'</body></html>';
-    dlBlob(html,'output.html','text/html');
-  }
+function makeDocx(content,isHtml){
+  if(typeof JSZip==='undefined'){dlBlob(content,'output.html','text/html');return}
+  var bodyContent=isHtml?content:content.split('\n').map(function(l){return '<w:p><w:r><w:t xml:space="preserve">'+esc(l)+'</w:t></w:r></w:p>'}).join('');
+  var xml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+(isHtml?'<w:p><w:r><w:t xml:space="preserve">'+content+'</w:t></w:r></w:p>':bodyContent)+'</w:body></w:document>';
+  var zip=new JSZip();
+  zip.file('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
+  zip.file('_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
+  zip.file('word/_rels/document.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>');
+  zip.file('word/document.xml',xml);
+  zip.generateAsync({type:'blob'}).then(function(blob){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='output.docx';a.click()});
 }
-function htmlToWord(){
-  var html=document.getElementById('word-in').value;
-  if(!html.trim()){alert('请输入 HTML');return}
-  if(typeof JSZip!=='undefined'){
-    var zip=new JSZip();
-    zip.file('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
-    zip.file('_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
-    zip.file('word/_rels/document.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>');
-    zip.file('word/document.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t xml:space="preserve">'+html+'</w:t></w:r></w:p></w:body></w:document>');
-    zip.generateAsync({type:'blob'}).then(function(blob){
-      var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='output.docx';a.click();
-    });
-  }else{
-    dlBlob(html,'output.html','text/html');
-  }
-}
+function txtToWord2(){var t=document.getElementById('t2w-in').value;if(!t.trim()){alert('请输入内容');return}makeDocx(t,false)}
+function htmlToWord2(){var h=document.getElementById('h2w-in').value;if(!h.trim()){alert('请输入 HTML');return}makeDocx(h,true)}
 
-// ===== Excel 转换 =====
-var xlsData=null;
-var xlsWorkbook=null;
-setupDz('xls-dz','xls-f',function(f){
-  var file=f[0];
+// ===== Excel 转换（单向） =====
+function xlsConv(fmt,fileId,infoId){
+  var fi=document.getElementById(fileId);
+  if(!fi.files.length){alert('请先选择 Excel 文件');return}
   var reader=new FileReader();
   reader.onload=function(e){
     try{
-      if(typeof XLSX==='undefined'){alert('Excel 库加载中，请稍后再试');return}
+      if(typeof XLSX==='undefined'){alert('Excel 库加载中，请稍后重试');return}
       var data=new Uint8Array(e.target.result);
-      xlsWorkbook=XLSX.read(data,{type:'array'});
-      var sheetName=xlsWorkbook.SheetNames[0];
-      xlsData=XLSX.utils.sheet_to_json(xlsWorkbook.Sheets[sheetName],{header:1});
-      document.getElementById('xls-info').innerHTML='<span class="ok">✓</span> '+file.name+' | 工作表: '+xlsWorkbook.SheetNames.join(', ')+' | '+xlsData.length+' 行';
-      // 预览表格
-      var html='<table style="width:100%;border-collapse:collapse;font-size:0.8rem">';
-      var maxRows=Math.min(xlsData.length,20);
-      for(var i=0;i<maxRows;i++){
-        html+='<tr>';
-        (xlsData[i]||[]).forEach(function(cell){
-          var tag=i===0?'th':'td';
-          html+='<'+tag+' style="border:1px solid var(--border);padding:4px 8px;'+(i===0?'background:var(--hover);font-weight:600':'')+'">'+esc(String(cell||''))+'</'+tag+'>';
-        });
-        html+='</tr>';
-      }
-      if(xlsData.length>20)html+='<tr><td style="padding:4px;color:var(--dim)">... 还有 '+(xlsData.length-20)+' 行</td></tr>';
-      html+='</table>';
-      document.getElementById('xls-preview').innerHTML=html;
-    }catch(e){document.getElementById('xls-info').innerHTML='<span class="err">读取失败: '+e.message+'</span>'}
+      var wb=XLSX.read(data,{type:'array'});
+      var sheet=wb.Sheets[wb.SheetNames[0]];
+      var name=fi.files[0].name.replace(/\.[^.]+$/,'');
+      if(fmt==='csv'){var csv=XLSX.utils.sheet_to_csv(sheet);dlBlob(csv,name+'.csv','text/csv')}
+      else if(fmt==='json'){var json=JSON.stringify(XLSX.utils.sheet_to_json(sheet),null,2);dlBlob(json,name+'.json','application/json')}
+      else if(fmt==='html'){var html=XLSX.utils.sheet_to_html(sheet);dlBlob('<!DOCTYPE html><html><head><meta charset="utf-8"><style>table{border-collapse:collapse;width:100%}td,th{border:1px solid #ddd;padding:6px}</style></head><body>'+html+'</body></html>',name+'.html','text/html')}
+      else if(fmt==='txt'){var txt=XLSX.utils.sheet_to_csv(sheet,{FS:'\t'});dlBlob(txt,name+'.txt','text/plain')}
+      document.getElementById(infoId).innerHTML='<span class="ok">✓</span> 转换完成！已下载';
+    }catch(e){document.getElementById(infoId).innerHTML='<span class="err">失败: '+e.message+'</span>'}
   };
-  reader.readAsArrayBuffer(file);
-});
-function xlsTo(fmt){
-  if(!xlsData){alert('请先选择 Excel 文件');return}
-  try{
-    var sheet=xlsWorkbook.Sheets[xlsWorkbook.SheetNames[0]];
-    if(fmt==='csv'){
-      var csv=XLSX.utils.sheet_to_csv(sheet);
-      dlBlob(csv,'output.csv','text/csv');
-      document.getElementById('xls-res').innerHTML='<span class="ok">✓</span> 已下载 CSV';
-    }else if(fmt==='json'){
-      var json=JSON.stringify(XLSX.utils.sheet_to_json(sheet),null,2);
-      dlBlob(json,'output.json','application/json');
-      document.getElementById('xls-res').innerHTML='<span class="ok">✓</span> 已下载 JSON';
-    }else if(fmt==='txt'){
-      var txt=XLSX.utils.sheet_to_csv(sheet,{FS:'\t'});
-      dlBlob(txt,'output.txt','text/plain');
-      document.getElementById('xls-res').innerHTML='<span class="ok">✓</span> 已下载 TXT';
-    }else if(fmt==='html'){
-      var html=XLSX.utils.sheet_to_html(sheet);
-      dlBlob('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Excel Export</title><style>table{border-collapse:collapse;width:100%}td,th{border:1px solid #ddd;padding:6px}</style></head><body>'+html+'</body></html>','output.html','text/html');
-      document.getElementById('xls-res').innerHTML='<span class="ok">✓</span> 已下载 HTML';
-    }
-  }catch(e){document.getElementById('xls-res').innerHTML='<span class="err">转换失败: '+e.message+'</span>'}
+  reader.readAsArrayBuffer(fi.files[0]);
 }
-function csvToXls(){
-  var csv=document.getElementById('xls-in').value.trim();
-  if(!csv){alert('请输入 CSV 数据');return}
+function csvToXls2(inputId){
+  var csv=document.getElementById(inputId).value.trim();
+  if(!csv){alert('请输入 CSV');return}
   try{
-    if(typeof XLSX==='undefined'){alert('Excel 库加载中，请稍后再试');return}
+    if(typeof XLSX==='undefined'){alert('Excel 库加载中');return}
     var wb=XLSX.read(csv,{type:'string'});
     var wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
     var blob=new Blob([wbout],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
     var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='output.xlsx';a.click();
-    document.getElementById('xls-res').innerHTML='<span class="ok">✓</span> 已下载 XLSX';
-  }catch(e){document.getElementById('xls-res').innerHTML='<span class="err">转换失败: '+e.message+'</span>'}
+  }catch(e){alert('转换失败: '+e.message)}
 }
-function jsonToXls(){
-  var json=document.getElementById('xls-in').value.trim();
-  if(!json){alert('请输入 JSON 数据');return}
+function jsonToXls2(inputId){
+  var json=document.getElementById(inputId).value.trim();
+  if(!json){alert('请输入 JSON');return}
   try{
-    if(typeof XLSX==='undefined'){alert('Excel 库加载中，请稍后再试');return}
-    var data=JSON.parse(json);
-    if(!Array.isArray(data))data=[data];
+    if(typeof XLSX==='undefined'){alert('Excel 库加载中');return}
+    var data=JSON.parse(json);if(!Array.isArray(data))data=[data];
     var ws=XLSX.utils.json_to_sheet(data);
-    var wb=XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb,ws,'Sheet1');
+    var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Sheet1');
     var wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
     var blob=new Blob([wbout],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
     var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='output.xlsx';a.click();
-    document.getElementById('xls-res').innerHTML='<span class="ok">✓</span> 已下载 XLSX';
-  }catch(e){document.getElementById('xls-res').innerHTML='<span class="err">转换失败: '+e.message+'</span>'}
+  }catch(e){alert('转换失败: '+e.message)}
 }
+function csvToJson2(inId,outId){
+  var csv=document.getElementById(inId).value.trim();
+  if(!csv){alert('请输入 CSV');return}
+  try{
+    var lines=csv.split('\n');var headers=lines[0].split(',').map(function(s){return s.trim()});
+    var result=lines.slice(1).filter(function(l){return l.trim()}).map(function(line){var vals=line.split(',');var obj={};headers.forEach(function(h,i){obj[h]=(vals[i]||'').trim()});return obj});
+    document.getElementById(outId).textContent=JSON.stringify(result,null,2);
+  }catch(e){document.getElementById(outId).textContent='错误: '+e.message}
+}
+function jsonToCsv2(inId,outId){
+  var json=document.getElementById(inId).value.trim();
+  if(!json){alert('请输入 JSON');return}
+  try{
+    var arr=JSON.parse(json);if(!Array.isArray(arr))throw new Error('需要 JSON 数组');
+    var h=Object.keys(arr[0]);var csv=[h.join(',')];
+    arr.forEach(function(row){csv.push(h.map(function(k){return row[k]||''}).join(','))});
+    document.getElementById(outId).textContent=csv.join('\n');
+  }catch(e){document.getElementById(outId).textContent='错误: '+e.message}
+}
+
+// Word conversion dz
+setupDz('w2h-dz','w2h-f',function(f){document.getElementById('w2h-info').innerHTML='<span class="ok">✓</span> '+f[0].name});
+setupDz('w2t-dz','w2t-f',function(f){document.getElementById('w2t-info').innerHTML='<span class="ok">✓</span> '+f[0].name});
+setupDz('w2m-dz','w2m-f',function(f){document.getElementById('w2m-info').innerHTML='<span class="ok">✓</span> '+f[0].name});
+setupDz('w2p-dz','w2p-f',function(f){document.getElementById('w2p-info').innerHTML='<span class="ok">✓</span> '+f[0].name});
+// Excel conversion dz
+setupDz('x2c-dz','x2c-f',function(f){document.getElementById('x2c-info').innerHTML='<span class="ok">✓</span> '+f[0].name});
+setupDz('x2j-dz','x2j-f',function(f){document.getElementById('x2j-info').innerHTML='<span class="ok">✓</span> '+f[0].name});
+setupDz('x2h-dz','x2h-f',function(f){document.getElementById('x2h-info').innerHTML='<span class="ok">✓</span> '+f[0].name});
+setupDz('x2t-dz','x2t-f',function(f){document.getElementById('x2t-info').innerHTML='<span class="ok">✓</span> '+f[0].name});
 
 // ===== Text to PDF =====
 function txt2pdf(){
