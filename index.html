@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f0f13">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="工具箱">
+<meta name="description" content="精选开源免费工具合集 — 文件转换 · OCR · 设计 · 笔记 · 压缩 · 办公">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>🛠️ 开源工具箱</title>
+<style>
+  :root {
+    --bg: #0f0f13;
+    --card: #1a1a24;
+    --card-hover: #22223a;
+    --accent: #6c63ff;
+    --accent2: #00d2ff;
+    --text: #e4e4e7;
+    --text-dim: #8888a0;
+    --border: #2a2a3d;
+    --tag-bg: #2a2a4a;
+    --orange: #f59e0b;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Noto Sans SC', sans-serif;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh; overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body::before {
+    content:''; position:fixed; top:-50%; left:-50%; width:200%; height:200%;
+    background: radial-gradient(circle at 20% 50%, rgba(108,99,255,0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0,210,255,0.06) 0%, transparent 50%),
+                radial-gradient(circle at 50% 80%, rgba(236,72,153,0.05) 0%, transparent 50%);
+    animation: bgShift 20s ease-in-out infinite; z-index:-1;
+  }
+  @keyframes bgShift { 0%,100%{transform:translate(0,0)} 33%{transform:translate(-2%,1%)} 66%{transform:translate(1%,-2%)} }
+
+  .header { text-align:center; padding:50px 20px 20px; }
+  .header h1 {
+    font-size:2.4rem; font-weight:800;
+    background:linear-gradient(135deg, var(--accent), var(--accent2), #ec4899);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    background-clip:text; margin-bottom:10px; letter-spacing:-1px;
+  }
+  .header p { color:var(--text-dim); font-size:1rem; max-width:560px; margin:0 auto; }
+
+  .install-banner {
+    display:none; max-width:400px; margin:16px auto; padding:12px 20px;
+    background:linear-gradient(135deg, rgba(108,99,255,0.2), rgba(0,210,255,0.15));
+    border:1px solid var(--accent); border-radius:14px;
+    text-align:center; cursor:pointer; transition:all .2s;
+  }
+  .install-banner:hover { background:linear-gradient(135deg, rgba(108,99,255,0.3), rgba(0,210,255,0.25)); }
+  .install-banner .btn-text { font-size:0.95rem; font-weight:600; color:#fff; }
+  .install-banner .btn-sub { font-size:0.78rem; color:var(--text-dim); margin-top:3px; }
+
+  .search-wrap { max-width:500px; margin:24px auto 8px; padding:0 20px; position:relative; }
+  .search-wrap input {
+    width:100%; padding:13px 18px 13px 44px; border-radius:14px;
+    border:1px solid var(--border); background:var(--card); color:var(--text);
+    font-size:0.95rem; outline:none; transition:border-color .2s, box-shadow .2s;
+  }
+  .search-wrap input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(108,99,255,0.15); }
+  .search-wrap input::placeholder { color:var(--text-dim); }
+  .search-wrap .icon { position:absolute; left:34px; top:50%; transform:translateY(-50%); font-size:1.1rem; opacity:.5; }
+
+  .filters { display:flex; flex-wrap:wrap; justify-content:center; gap:7px; padding:16px 20px 8px; max-width:900px; margin:0 auto; }
+  .filter-btn {
+    padding:7px 16px; border-radius:18px; border:1px solid var(--border);
+    background:transparent; color:var(--text-dim); font-size:0.85rem;
+    cursor:pointer; transition:all .2s; font-family:inherit;
+  }
+  .filter-btn:hover { border-color:var(--accent); color:var(--text); }
+  .filter-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+
+  .stats { text-align:center; padding:8px 20px 16px; color:var(--text-dim); font-size:0.85rem; }
+
+  .grid {
+    max-width:1200px; margin:0 auto; padding:0 16px 60px;
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(310px, 1fr)); gap:16px;
+  }
+
+  .card {
+    background:var(--card); border:1px solid var(--border); border-radius:16px;
+    padding:22px; transition:all .3s ease; cursor:pointer; position:relative;
+    overflow:hidden; text-decoration:none; color:inherit; display:block;
+    animation:fadeUp .5s ease both;
+  }
+  .card::before {
+    content:''; position:absolute; top:0; left:0; width:100%; height:3px;
+    background:linear-gradient(90deg, var(--accent), var(--accent2));
+    opacity:0; transition:opacity .3s;
+  }
+  .card:hover {
+    border-color:var(--accent); background:var(--card-hover);
+    transform:translateY(-3px); box-shadow:0 10px 30px rgba(108,99,255,0.1);
+  }
+  .card:hover::before { opacity:1; }
+  .card-head { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+  .card-icon {
+    width:44px; height:44px; border-radius:11px; display:flex;
+    align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0;
+  }
+  .card-title { font-size:1.1rem; font-weight:700; color:#fff; }
+  .card-stars { font-size:0.78rem; color:var(--orange); margin-top:1px; }
+  .card-desc { color:var(--text-dim); font-size:0.88rem; line-height:1.6; margin-bottom:12px; }
+  .card-tags { display:flex; flex-wrap:wrap; gap:5px; }
+  .tag { padding:3px 9px; border-radius:7px; background:var(--tag-bg); font-size:0.75rem; color:var(--text-dim); }
+  .card-link { display:inline-flex; align-items:center; gap:4px; margin-top:10px; font-size:0.82rem; color:var(--accent2); opacity:.7; }
+  .card:hover .card-link { opacity:1; }
+
+  .cat-convert .card-icon { background:rgba(108,99,255,0.15); }
+  .cat-doc .card-icon { background:rgba(34,197,94,0.15); }
+  .cat-media .card-icon { background:rgba(236,72,153,0.15); }
+  .cat-ocr .card-icon { background:rgba(6,182,212,0.15); }
+  .cat-design .card-icon { background:rgba(245,158,11,0.15); }
+  .cat-utility .card-icon { background:rgba(239,68,68,0.15); }
+  .cat-knowledge .card-icon { background:rgba(168,85,247,0.15); }
+
+  .footer {
+    text-align:center; padding:28px 20px; color:var(--text-dim);
+    font-size:0.82rem; border-top:1px solid var(--border);
+  }
+  .footer a { color:var(--accent2); text-decoration:none; }
+
+  .no-results { grid-column:1/-1; text-align:center; padding:50px 20px; color:var(--text-dim); }
+  .no-results .emoji { font-size:2.5rem; margin-bottom:12px; }
+
+  @media (max-width:700px) {
+    .header h1 { font-size:1.9rem; }
+    .grid { grid-template-columns:1fr; }
+  }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🛠️ 开源工具箱</h1>
+  <p>精选开源免费工具 · 文件转换 · OCR · 设计 · 笔记 · 压缩 · 办公</p>
+</div>
+
+<div class="install-banner" id="installBanner" onclick="installApp()">
+  <div class="btn-text">📲 安装为 APP</div>
+  <div class="btn-sub">添加到主屏幕，离线也能用</div>
+</div>
+
+<div class="search-wrap">
+  <span class="icon">🔍</span>
+  <input type="text" id="search" placeholder="搜索工具名称、功能..." autocomplete="off">
+</div>
+
+<div class="filters" id="filters"></div>
+<div class="stats" id="stats"></div>
+<div class="grid" id="grid"></div>
+
+<div class="footer">
+  <p>所有工具均为开源免费 · <a href="https://github.com" target="_blank">GitHub</a> & 官方网站</p>
+  <p style="margin-top:5px">Made with ❤️</p>
+</div>
+
+<script>
+const tools=[
+  {name:"Pandoc",icon:"📝",cat:"convert",catLabel:"格式转换",stars:"35K+",desc:"文档格式转换「瑞士军刀」，支持 60+ 种格式互转：Markdown、Word、PDF、HTML、LaTeX、EPUB 等。命令行工具，适合批量自动化。",tags:["文档","Markdown","PDF","Word","命令行"],url:"https://pandoc.org",github:"https://github.com/jgm/pandoc"},
+  {name:"File Converter",icon:"🔄",cat:"convert",catLabel:"格式转换",stars:"12K+",desc:"Windows 右键菜单一键转换！支持音视频、图片、文档。免费开源 GPL，无广告，支持中文。",tags:["Windows","右键菜单","音视频","图片","文档"],url:"https://file-converter.org",github:"https://github.com/Tichau/FileConverter"},
+  {name:"VERT",icon:"⚡",cat:"convert",catLabel:"格式转换",stars:"—",desc:"下一代本地文件转换器，支持图片、音频、文档、视频。完全本地运行，无需上传，开源免费。",tags:["本地运行","图片","音频","视频","隐私"],github:"https://github.com/nicostap/VERT"},
+  {name:"JODConverter",icon:"🔧",cat:"convert",catLabel:"格式转换",stars:"2K+",desc:"Java 文档转换库，基于 LibreOffice 实现自动化转换。适合开发者集成到项目中。",tags:["Java","API","文档转换","开发者"],github:"https://github.com/jodconverter/jodconverter"},
+  {name:"LibreOffice",icon:"📊",cat:"doc",catLabel:"办公套件",stars:"3K+",desc:"完整开源办公套件（Writer、Calc、Impress），完美兼容 Office 格式，支持命令行批量转换。",tags:["办公","Word","Excel","PPT","兼容Office"],url:"https://www.libreoffice.org",github:"https://github.com/LibreOffice/core"},
+  {name:"FFmpeg",icon:"🎬",cat:"media",catLabel:"音视频",stars:"48K+",desc:"音视频格式转换之王！支持所有格式转换、剪辑、合并、压缩。功能极强，很多工具底层都是它。",tags:["音视频","转码","剪辑","命令行"],url:"https://ffmpeg.org",github:"https://github.com/FFmpeg/FFmpeg"},
+  {name:"OBS Studio",icon:"🎥",cat:"media",catLabel:"音视频",stars:"62K+",desc:"开源免费直播推流和录屏软件。多场景切换、混音、滤镜、虚拟摄像头。内容创作者必备。",tags:["录屏","直播","推流","免费"],url:"https://obsproject.com",github:"https://github.com/obsproject/obs-studio"},
+  {name:"VLC",icon:"▶️",cat:"media",catLabel:"音视频",stars:"14K+",desc:"万能媒体播放器，几乎支持所有格式。也支持格式转换、流媒体、字幕。跨平台免费。",tags:["播放器","万能格式","字幕","跨平台"],url:"https://www.videolan.org",github:"https://github.com/videolan/vlc"},
+  {name:"ImageMagick",icon:"🖼️",cat:"media",catLabel:"图片处理",stars:"12K+",desc:"图片批处理神器！格式转换、裁剪、缩放、水印、滤镜。命令行工具，支持脚本自动化。",tags:["图片","批处理","水印","命令行"],url:"https://imagemagick.org",github:"https://github.com/ImageMagick/ImageMagick"},
+  {name:"Umi-OCR",icon:"👁️",cat:"ocr",catLabel:"OCR识别",stars:"30K+",desc:"离线 OCR 文字识别！截图/粘贴/批量导入图片识别文字。完全离线，支持去水印、二维码。",tags:["OCR","离线","截图","文字识别","二维码"],github:"https://github.com/hiroi-sora/Umi-OCR"},
+  {name:"draw.io",icon:"📐",cat:"design",catLabel:"设计绘图",stars:"1K+",desc:"免费画图工具。流程图、架构图、思维导图、UML。可离线用，有 VS Code 插件，导出多格式。",tags:["流程图","架构图","UML","思维导图"],url:"https://www.draw.io",github:"https://github.com/jgraph/drawio"},
+  {name:"GIMP",icon:"🎨",cat:"design",catLabel:"设计绘图",stars:"5K+",desc:"Photoshop 开源替代！支持图层、滤镜、蒙版、批处理。功能强大，社区插件丰富。",tags:["图片编辑","PS替代","图层","滤镜"],url:"https://www.gimp.org",github:"https://github.com/GNOME/gimp"},
+  {name:"Inkscape",icon:"🖊️",cat:"design",catLabel:"设计绘图",stars:"2K+",desc:"Illustrator 开源替代！SVG 矢量图编辑利器，适合图标、海报、排版。跨平台免费。",tags:["矢量图","SVG","AI替代","图标"],url:"https://inkscape.org",github:"https://github.com/inkscape/inkscape"},
+  {name:"Obsidian",icon:"💎",cat:"knowledge",catLabel:"知识管理",stars:"—",desc:"本地知识管理工具。Markdown 存储，双向链接、图谱视图、插件生态极丰富。数据在自己手里。",tags:["笔记","Markdown","知识库","双向链接"],url:"https://obsidian.md"},
+  {name:"Logseq",icon:"📓",cat:"knowledge",catLabel:"知识管理",stars:"34K+",desc:"开源本地知识管理。大纲笔记+双向链接，支持 Markdown 和 Org-mode。隐私友好。",tags:["笔记","大纲","双向链接","开源"],url:"https://logseq.com",github:"https://github.com/logseq/logseq"},
+  {name:"Snipaste",icon:"✂️",cat:"utility",catLabel:"效率工具",stars:"—",desc:"截图+贴图神器。截图后直接贴到屏幕做参考，支持标注、取色、历史记录。免费版够用。",tags:["截图","贴图","标注","取色"],url:"https://www.snipaste.com"},
+  {name:"ShareX",icon:"📸",cat:"utility",catLabel:"效率工具",stars:"30K+",desc:"Windows 最强截图+录屏。滚动截图、OCR、标注、自动上传、拾色器、自动化工作流。",tags:["截图","录屏","OCR","自动上传"],url:"https://getsharex.com",github:"https://github.com/ShareX/ShareX"},
+  {name:"7-Zip",icon:"📦",cat:"utility",catLabel:"压缩工具",stars:"—",desc:"老牌压缩解压，支持 7z、zip、tar、rar 等。压缩率极高，完全免费，Windows 必备。",tags:["压缩","解压","7z","zip","rar"],url:"https://www.7-zip.org"},
+  {name:"PeaZip",icon:"🗜️",cat:"utility",catLabel:"压缩工具",stars:"4K+",desc:"跨平台压缩解压，支持 200+ 种存档格式。界面友好，功能丰富，开源免费。",tags:["压缩","解压","跨平台"],url:"https://peazip.github.io",github:"https://github.com/peazip/PeaZip"},
+  {name:"KeePass",icon:"🔐",cat:"utility",catLabel:"效率工具",stars:"—",desc:"开源密码管理器，本地加密存储。自动填充、密码生成、插件扩展。数据在本地，安全放心。",tags:["密码管理","加密","安全","本地存储"],url:"https://keepass.info"}
+];
+
+const categories=[
+  {id:"all",label:"🎯 全部"},
+  {id:"convert",label:"🔄 格式转换"},
+  {id:"doc",label:"📊 办公"},
+  {id:"media",label:"🎬 音视频"},
+  {id:"ocr",label:"👁️ OCR"},
+  {id:"design",label:"🎨 设计"},
+  {id:"knowledge",label:"💎 知识"},
+  {id:"utility",label:"⚡ 效率"}
+];
+
+let currentFilter="all", searchTerm="";
+
+function renderFilters(){
+  const el=document.getElementById("filters");
+  el.innerHTML=categories.map(c=>
+    `<button class="filter-btn ${c.id===currentFilter?'active':''}" data-cat="${c.id}">${c.label}</button>`
+  ).join("");
+  el.querySelectorAll(".filter-btn").forEach(btn=>{
+    btn.addEventListener("click",()=>{currentFilter=btn.dataset.cat;renderFilters();renderGrid()});
+  });
+}
+
+function renderGrid(){
+  const grid=document.getElementById("grid"), stats=document.getElementById("stats");
+  let filtered=tools.filter(t=>{
+    const catMatch=currentFilter==="all"||t.cat===currentFilter;
+    const s=searchTerm;
+    const searchMatch=!s||t.name.toLowerCase().includes(s)||t.desc.toLowerCase().includes(s)||t.tags.some(tag=>tag.toLowerCase().includes(s))||t.catLabel.includes(s);
+    return catMatch&&searchMatch;
+  });
+  stats.textContent=`${filtered.length} / ${tools.length} 个工具`;
+  if(!filtered.length){grid.innerHTML=`<div class="no-results"><div class="emoji">🔍</div><p>没有匹配的工具，换个关键词试试？</p></div>`;return}
+  grid.innerHTML=filtered.map((t,i)=>`
+    <a class="card cat-${t.cat}" href="${t.url||t.github}" target="_blank" rel="noopener" style="animation-delay:${i*0.04}s">
+      <div class="card-head">
+        <div class="card-icon">${t.icon}</div>
+        <div><div class="card-title">${t.name}</div>
+        <div class="card-stars">${t.stars!=='—'?'⭐ '+t.stars+' Stars':t.catLabel}</div></div>
+      </div>
+      <div class="card-desc">${t.desc}</div>
+      <div class="card-tags">${t.tags.map(tag=>`<span class="tag">${tag}</span>`).join("")}</div>
+      <div class="card-link">访问 →</div>
+    </a>
+  `).join("");
+}
+
+document.getElementById("search").addEventListener("input",e=>{searchTerm=e.target.value.trim().toLowerCase();renderGrid()});
+renderFilters();renderGrid();
+
+// PWA install
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('installBanner').style.display='block'});
+function installApp(){
+  if(!deferredPrompt)return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(r=>{if(r.outcome==='accepted'){document.getElementById('installBanner').style.display='none'};deferredPrompt=null});
+}
+window.addEventListener('appinstalled',()=>{document.getElementById('installBanner').style.display='none'});
+
+// Register SW
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+</script>
+</body>
+</html>
