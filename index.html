@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="工具箱">
-<link rel="manifest" href="manifest.json">
+
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>🛠️ 体院办公</title>
 <style>
@@ -844,7 +844,7 @@ function zipGo(){
 }
 
 // ===== Service Worker =====
-if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){x.unregister()})});caches.keys().then(function(k){k.forEach(function(c){caches.delete(c)})});setTimeout(function(){navigator.serviceWorker.register('sw.js?v=3')},1000)}
+// 暂不注册 Service Worker，避免缓存问题
 </script>
 </body>
 </html>
