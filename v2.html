@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="工具箱">
 
 <link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
 <title>🛠️ 体院办公</title>
 <style>
 :root{--bg:#0f0f13;--sidebar:#14141c;--card:#1a1a24;--hover:#22223a;--accent:#6c63ff;--accent2:#00d2ff;--pink:#ec4899;--green:#22c55e;--orange:#f59e0b;--red:#ef4444;--text:#e4e4e7;--dim:#8888a0;--border:#2a2a3d;--radius:12px}
@@ -37,8 +38,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC',sans-
 .top .d{color:var(--dim);font-size:.78rem}
 .menu-btn{display:none;background:none;border:none;color:var(--text);font-size:1.3rem;cursor:pointer}
 .cnt{flex:1;overflow-y:auto;padding:20px;padding-bottom:90px}
-.tp{display:none}.tp.on{display:block;animation:fi .25s ease}
-@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.tp{display:none}
+
 .sec{background:rgba(26,26,36,0.22);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);border:1px solid rgba(42,42,61,0.2);border-radius:var(--radius);padding:18px;margin-bottom:14px}
 .st{font-size:.9rem;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:7px}
 .btn{padding:9px 18px;border-radius:10px;border:none;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit}
@@ -108,6 +109,32 @@ body.light .footer-bar{background:rgba(232,232,240,0.8);color:rgba(100,100,120,0
   .sec{padding:12px;margin-bottom:10px}
   .btn{padding:8px 14px;font-size:.82rem}
 }
+
+/* 工具切换动画 */
+.tp{display:none;opacity:0;transform:translateY(8px);transition:opacity .25s ease,transform .25s ease}
+.tp.on{display:block;opacity:1;transform:translateY(0)}
+/* 按钮hover效果 */
+.btn{transition:all .2s ease}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(108,99,255,0.2)}
+.btn:active{transform:translateY(0)}
+/* 在线工具标识 */
+a.ni::after{content:'↗';font-size:.6rem;margin-left:4px;opacity:.4}
+/* 加载动画 */
+.page-loader{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:16px;transition:opacity .5s}
+.page-loader.hide{opacity:0;pointer-events:none}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.page-loader .load-text{color:var(--dim);font-size:.85rem}
+/* 回到顶部 */
+.back-top{position:fixed;bottom:50px;right:20px;width:40px;height:40px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transform:translateY(20px);transition:all .3s;z-index:60;font-size:1.1rem;border:none}
+.back-top.show{opacity:1;transform:translateY(0)}
+.back-top:hover{background:#5b54e0;transform:translateY(-2px)}
+/* 快捷键提示 */
+.kbd{display:inline-block;padding:2px 6px;background:var(--tag-bg);border:1px solid var(--border);border-radius:4px;font-size:.7rem;font-family:monospace;color:var(--dim);margin-left:4px}
+/* 侧边栏移动端点击外部关闭 */
+@media(max-width:768px){
+  .sidebar.open~.main{pointer-events:none}
+}
 </style>
 </head>
 <body>
@@ -116,7 +143,7 @@ body.light .footer-bar{background:rgba(232,232,240,0.8);color:rgba(100,100,120,0
   <div class="sb-hd"><h1>🛠️ 体院办公</h1><p>所有工具本地运行，数据无留痕</p><p style="margin-top:6px;font-size:.68rem;color:var(--accent2)">此工具箱主要服务于Qlnu-体育学院各级办公室</p></div>
   <div class="search-box">
     <span class="s-icon">🔍</span>
-    <input type="text" id="toolSearch" placeholder="搜索工具..." oninput="filterTools(this.value)">
+    <input type="text" id="toolSearch" placeholder="搜索工具... (Ctrl+K)" oninput="filterTools(this.value)">
   </div>
   <div class="nav-g open">
     <div class="nav-l">文件转换</div>
@@ -1865,6 +1892,51 @@ function sortByUsage(){
 }
 sortByUsage();
 
+
+// ===== 页面加载动画 =====
+window.addEventListener('load',function(){
+  var loader=document.getElementById('pageLoader');
+  if(loader){loader.classList.add('hide');setTimeout(function(){loader.remove()},600)}
+});
+
+// ===== 回到顶部按钮 =====
+window.addEventListener('scroll',function(){
+  var btn=document.getElementById('backTop');
+  if(btn){btn.classList.toggle('show',window.scrollY>300||document.querySelector('.cnt').scrollTop>300)}
+});
+
+// ===== 快捷键 =====
+document.addEventListener('keydown',function(e){
+  // Ctrl+K 聚焦搜索
+  if((e.ctrlKey||e.metaKey)&&e.key==='k'){
+    e.preventDefault();
+    var search=document.getElementById('toolSearch');
+    if(search){search.focus();search.select()}
+  }
+  // Esc 关闭侧边栏(移动端)
+  if(e.key==='Escape'){
+    tSidebar(false);
+    var search=document.getElementById('toolSearch');
+    if(search&&search===document.activeElement)search.blur();
+  }
+});
+
+// ===== 手机端点击内容区关闭侧边栏 =====
+document.querySelector('.cnt').addEventListener('click',function(){
+  if(window.innerWidth<=768&&document.getElementById('sb').classList.contains('open')){
+    tSidebar(false);
+  }
+});
+
+// ===== 回到顶部按钮跟随内容滚动 =====
+var cntEl=document.querySelector('.cnt');
+if(cntEl){
+  cntEl.addEventListener('scroll',function(){
+    var btn=document.getElementById('backTop');
+    if(btn){btn.classList.toggle('show',cntEl.scrollTop>200)}
+  });
+}
+
 // ===== 清除痕迹 =====
 async function clearTraces(){
   if(!confirm('确定要清除所有使用痕迹吗？\n\n将清除：\n• 所有缓存数据\n• Service Worker\n• 本地存储\n\n浏览器历史记录需要手动清除'))return;
@@ -1893,6 +1965,11 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').then(
 <div class="footer-bar" style="position:fixed;bottom:0;left:0;right:0;text-align:center;padding:8px 20px;font-size:0.72rem;color:rgba(136,136,160,0.5);line-height:1.6;background:rgba(15,15,19,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:50;border-top:1px solid rgba(42,42,61,0.2)">
   <span>📌 所有工具本地运行，数据无痕 | 网页开发：刘奕赫 齐鲁师范体育学院 学号：2024146088 | 如有问题欢迎反馈</span>
 </div>
+<div class="page-loader" id="pageLoader">
+  <div class="spinner"></div>
+  <div class="load-text">🛠️ 体院办公 加载中...</div>
+</div>
+<button class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 </body>
 </html>
 <!-- 1783220484 -->
