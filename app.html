@@ -20,7 +20,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC',sans-
 .sb-hd h1{font-size:1.1rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .sb-hd p{font-size:.7rem;color:var(--dim);margin-top:3px}
 .nav-g{padding:6px 0}
-.nav-l{padding:5px 14px;font-size:.68rem;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+.nav-l{padding:5px 14px;font-size:.68rem;color:var(--dim);text-transform:uppercase;letter-spacing:1px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;transition:color .2s}
+.nav-l:hover{color:var(--text)}
+.nav-l::after{content:'▸';font-size:.6rem;transition:transform .2s;color:var(--dim)}
+.nav-g.open .nav-l::after{transform:rotate(90deg)}
+.nav-g .ni{display:none}
+.nav-g.open .ni{display:flex}
 .ni{display:flex;align-items:center;gap:9px;padding:9px 14px;cursor:pointer;transition:all .15s;font-size:.85rem;color:var(--dim);border-left:3px solid transparent}
 .ni:hover{background:rgba(34,34,58,0.3);color:var(--text)}
 .ni.on{background:rgba(108,99,255,.15);color:var(--accent);border-left-color:var(--accent)}
@@ -70,7 +75,7 @@ a{color:var(--accent2);text-decoration:none}
 <div class="overlay" id="ov" onclick="tSidebar()"></div>
 <nav class="sidebar" id="sb">
   <div class="sb-hd"><h1>🛠️ 体院办公</h1><p>所有工具本地运行，数据无留痕</p><p style="margin-top:6px;font-size:.68rem;color:var(--accent2)">此工具箱主要服务于Qlnu-体育学院各级办公室</p></div>
-  <div class="nav-g">
+  <div class="nav-g open">
     <div class="nav-l">文件转换</div>
     <div class="ni on" data-t="imgcv"><span class="ic">🖼️</span>图片格式转换</div>
     <div class="ni" data-t="pdf"><span class="ic">📄</span>图片转 PDF</div>
@@ -679,6 +684,17 @@ document.querySelectorAll('.ni').forEach(function(el){
     document.getElementById('tt').textContent=titles[t]||'';
     document.getElementById('td').textContent=descs[t]||'';
     tSidebar(false);
+  };
+});
+// ===== 手风琴折叠 =====
+document.querySelectorAll('.nav-l').forEach(function(label){
+  label.onclick=function(){
+    var group=label.parentElement;
+    var isOpen=group.classList.contains('open');
+    // 关闭所有
+    document.querySelectorAll('.nav-g').forEach(function(g){g.classList.remove('open')});
+    // 打开点击的那个（如果之前是关的）
+    if(!isOpen)group.classList.add('open');
   };
 });
 function tSidebar(force){
