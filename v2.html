@@ -67,8 +67,9 @@ a{color:var(--accent2);text-decoration:none}
   .sidebar{position:fixed;top:0;left:0;height:100%;z-index:100;transform:translateX(-100%);transition:transform .3s}
   .sidebar.open{transform:translateX(0)}
   .menu-btn{display:block}
-  .cnt{padding:14px}
+  .cnt{padding:14px;padding-bottom:90px}
   .overlay.show{display:block}
+  .footer-bar{left:0!important}
 }
 </style>
 </head>
@@ -1636,11 +1637,11 @@ async function clearTraces(){
 // ===== Service Worker =====
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').then(function(r){console.log('SW registered, will self-destruct')})}
 </script>
-</body>
-<div style="position:fixed;bottom:0;left:0;right:0;text-align:center;padding:10px 20px;font-size:0.72rem;color:rgba(136,136,160,0.5);line-height:1.6;background:rgba(15,15,19,0.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:50">
+<div class="footer-bar" style="position:fixed;bottom:0;left:220px;right:0;text-align:center;padding:10px 20px;font-size:0.72rem;color:rgba(136,136,160,0.5);line-height:1.6;background:rgba(15,15,19,0.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:50">
   <div>📌 本工具箱所有功能均已测试，数据全程本地处理，无痕运行</div>
   <div>网页开发：刘奕赫 | 齐鲁师范体育学院 | 学号：2024146088</div>
   <div>使用过程中如有问题或需求，欢迎随时反馈，将持续优化</div>
 </div>
+</body>
 </html>
 <!-- 1783220484 -->
