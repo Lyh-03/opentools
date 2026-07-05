@@ -821,7 +821,7 @@ console.log('Hi');
             <div>pause</div>
           </div>
           <div style="margin-top:10px;display:flex;gap:8px">
-            <button class="btn bp bs" onclick="navigator.clipboard.writeText('@echo off\necho 正在清理临时文件...\ndel /q/f/s %TEMP%\\*\ndel /q/f/s C:\\Windows\\Temp\\*\ndel /q/f/s C:\\Windows\\Prefetch\\*\necho 清理完成！\npause');alert('已复制！粘贴到记事本保存为 .bat 文件，右键以管理员身份运行')">📋 复制命令</button>
+            <button class="btn bp bs" onclick="navigator.clipboard.writeText('@echo off\necho 正在清理临时文件...\ndel /q/f/s %TEMP%\\*\ndel /q/f/s C:\\Windows\\Temp\\*\ndel /q/f/s C:\\Windows\\Prefetch\\*\necho 清理完成！\npause').then(function(){showToast('✅ 已复制！粘贴到记事本保存为 .bat 文件，右键以管理员身份运行')})">📋 复制命令</button>
           </div>
           <p style="color:var(--dim);margin-top:10px">💡 保存为 .bat 文件 → 右键 → 以管理员身份运行</p>
         </div>
@@ -949,6 +949,7 @@ console.log('Hi');
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js" defer></script>
 <script>
 // ===== Navigation =====
 var titles={imgcv:'图片格式转换',pdf:'图片转 PDF',word2html:'Word 转 HTML',word2txt:'Word 转文本',word2md:'Word 转 Markdown',word2pdf:'Word 转 PDF',txt2word:'文本 转 Word',html2word:'HTML 转 Word',xls2csv:'Excel 转 CSV',xls2json:'Excel 转 JSON',xls2html:'Excel 转 HTML',xls2txt:'Excel 转文本',csv2xls:'CSV 转 Excel',json2xls:'JSON 转 Excel',md:'Markdown 编辑器',csv2json:'CSV 转 JSON',json2csv:'JSON 转 CSV',txt2pdf:'文本转 PDF',img2base:'图片转 Base64',img2ico:'图片转 ICO',imgmerge:'图片拼接',txt2img:'文字转图片',v2a:'视频提取音频',acv:'音频格式转换',vcv:'视频格式转换',vcut:'视频剪切',vframe:'视频提取帧图片',comp:'图片压缩',resize:'图片缩放',wm:'图片加水印',cp:'颜色拾取',ocr:'OCR 文字识别',qr:'二维码生成',b64:'Base64 编解码',hash:'哈希计算',jf:'JSON 格式化',re:'正则测试',diff:'文本对比',url:'URL 编解码',ts:'时间戳转换',zip:'ZIP 压缩',diskclean:'磁盘清理',storesense:'存储感知',sysclean:'系统文件清理',cmdclean:'CMD 一键清理'};
@@ -1150,33 +1151,6 @@ function mdRender(){
 mdRender();
 
 // ===== CSV =====
-var csvMode='c2j';
-function csvM(m){
-  csvMode=m;
-  document.getElementById('c2j').classList.toggle('on',m==='c2j');
-  document.getElementById('j2c').classList.toggle('on',m==='j2c');
-  document.getElementById('ci-l').textContent=m==='c2j'?'输入 CSV':'输入 JSON';
-  document.getElementById('co-l').textContent=m==='c2j'?'输出 JSON':'输出 CSV';
-}
-function csvGo(){
-  var input=document.getElementById('ci').value.trim();
-  var out=document.getElementById('co');
-  try{
-    if(csvMode==='c2j'){
-      var lines=input.split('\n');var headers=lines[0].split(',').map(function(s){return s.trim()});
-      var result=lines.slice(1).filter(function(l){return l.trim()}).map(function(line){
-        var vals=line.split(',');var obj={};headers.forEach(function(h,i){obj[h]=(vals[i]||'').trim()});return obj;
-      });
-      out.value=JSON.stringify(result,null,2);
-    }else{
-      var arr=JSON.parse(input);if(!Array.isArray(arr))throw new Error('需要 JSON 数组');
-      var h=Object.keys(arr[0]);var csv=[h.join(',')];
-      arr.forEach(function(row){csv.push(h.map(function(k){return row[k]||''}).join(','))});
-      out.value=csv.join('\n');
-    }
-  }catch(e){out.value='错误: '+e.message}
-}
-
 // ===== Word 转换（单向） =====
 function wordConv(fmt,fileId,infoId){
   if(!checkCDN(['mammoth']))return;
@@ -1340,7 +1314,7 @@ function txt2pdf(){
   if(typeof window.jspdf==='undefined'){
     // Fallback
     var w=window.open('','','width=800,height=600');
-    w.document.write('<!DOCTYPE html><html><head><title>PDF</title><style>@page{size:A4'+orient==='landscape'?' landscape':''+';margin:20mm}body{font-size:'+size+'px;line-height:1.8;white-space:pre-wrap}</style></head><body>'+text.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</body></html>');
+    w.document.write('<!DOCTYPE html><html><head><title>PDF</title><style>@page{size:A4'+(orient==='landscape'?' landscape':'')+';margin:20mm}body{font-size:'+size+'px;line-height:1.8;white-space:pre-wrap}</style></head><body>'+text.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</body></html>');
     w.document.close();setTimeout(function(){w.print()},300);return;
   }
   try{
@@ -1369,7 +1343,7 @@ function img2base(){
     var ta=document.createElement('textarea');
     ta.value=result;ta.style.cssText='width:100%;min-height:120px;font-family:monospace;font-size:0.8rem;margin-top:10px;border-radius:10px;padding:10px;background:var(--bg);color:var(--text);border:1px solid var(--border)';
     var el=document.getElementById('i2b-res');el.innerHTML='<label>Base64 结果 ('+Math.round(result.length/1024)+'KB)</label>';el.appendChild(ta);
-    var btn=document.createElement('button');btn.className='btn bo bs';btn.style.marginTop='8px';btn.textContent='复制';btn.onclick=function(){navigator.clipboard.writeText(result);alert('已复制')};el.appendChild(btn);
+    var btn=document.createElement('button');btn.className='btn bo bs';btn.style.marginTop='8px';btn.textContent='复制';btn.onclick=function(){navigator.clipboard.writeText(result);showToast('✅ 已复制到剪贴板')};el.appendChild(btn);
   };
   reader.readAsDataURL(i2bFile);
 }
@@ -1553,7 +1527,7 @@ function cpUpd(){
 cpUpd();
 function cpCpy(t){
   var v=document.getElementById(t==='hex'?'cp-hex':t==='rgb'?'cp-rgb':'cp-hsl').textContent;
-  navigator.clipboard.writeText(v);alert('已复制: '+v);
+  navigator.clipboard.writeText(v).then(function(){showToast('✅ 已复制: '+v)});
 }
 
 // ===== QR Code (use qrcode-generator library) =====
@@ -1608,9 +1582,57 @@ async function hashGo(){
   for(var algo of ['SHA-1','SHA-256','SHA-512']){
     var hash=await crypto.subtle.digest(algo,data);
     var hex=Array.from(new Uint8Array(hash)).map(function(b){return b.toString(16).padStart(2,'0')}).join('');
-    html+='<div style="margin:6px 0"><label style="color:var(--accent2)">'+algo+'</label><div class="rb" style="cursor:pointer" onclick="navigator.clipboard.writeText(this.textContent);alert(\'已复制\')">'+hex+'</div></div>';
+    html+='<div style="margin:6px 0"><label style="color:var(--accent2)">'+algo+'</label><div class="rb" style="cursor:pointer" onclick="navigator.clipboard.writeText(this.textContent);showToast(\'✅ 已复制\')">'+hex+'</div></div>';
   }
   document.getElementById('hash-res').innerHTML=html;
+}
+
+// ===== OCR 文字识别 =====
+var ocrFile=null;
+setupDz('ocr-dz','ocr-f',function(f){ocrFile=f[0];showPv(f,'ocr-pv')});
+async function ocrGo(){
+  if(!ocrFile){alert('请先选择图片');return}
+  if(typeof Tesseract==='undefined'){
+    alert('⏳ OCR 引擎加载中，请稍后重试');
+    return;
+  }
+  var lang=document.getElementById('ocr-l').value;
+  var btn=document.getElementById('ocr-btn');
+  var stEl=document.getElementById('ocr-st');
+  var resEl=document.getElementById('ocr-res');
+  btn.disabled=true;btn.textContent='⏳ 识别中...';
+  stEl.textContent='正在加载语言包...';
+  resEl.innerHTML='';
+  try{
+    var result=await Tesseract.recognize(ocrFile,lang,{
+      logger:function(m){
+        if(m.status==='recognizing text'){
+          var pct=Math.round((m.progress||0)*100);
+          stEl.textContent='识别中... '+pct+'%';
+        }else if(m.status){
+          stEl.textContent=m.status+'...';
+        }
+      }
+    });
+    var text=result.data.text.trim();
+    if(!text){
+      resEl.innerHTML='<div style="color:var(--dim)">未识别到文字，请尝试调整图片或切换语言</div>';
+    }else{
+      var confidence=result.data.confidence;
+      resEl.innerHTML='<div style="margin-bottom:8px"><span class="ok">✓</span> 识别完成（置信度: '+confidence.toFixed(1)+'%）</div>'+
+        '<div class="rb" style="max-height:300px;overflow:auto">'+esc(text)+'</div>'+
+        '<button class="btn bo bs" style="margin-top:8px" onclick="cpTxt(\'ocr-res-txt\')">📋 复制文字</button>';
+      // 添加隐藏的可复制文本
+      var ta=document.createElement('textarea');
+      ta.id='ocr-res-txt';ta.value=text;ta.style.display='none';
+      resEl.appendChild(ta);
+    }
+    stEl.textContent='识别完成';
+  }catch(e){
+    stEl.textContent='识别失败';
+    resEl.innerHTML='<span class="err">错误: '+esc(e.message)+'</span>';
+  }
+  btn.disabled=false;btn.textContent='👁️ 开始识别';
 }
 
 // ===== JSON =====
