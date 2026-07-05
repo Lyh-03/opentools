@@ -125,6 +125,9 @@ a{color:var(--accent2);text-decoration:none}
     <button class="menu-btn" onclick="tSidebar()">☰</button>
     <h2 id="tt">图片格式转换</h2>
     <span class="d" id="td">PNG/JPG/WebP/BMP 互转</span>
+    <div style="margin-left:auto">
+      <button class="btn bo bs" onclick="clearTraces()" style="white-space:nowrap">🧹 清除痕迹</button>
+    </div>
   </div>
   <div class="cnt">
 
@@ -1553,6 +1556,27 @@ async function vframeGo(){
     setFFStatus('vframe-st','提取完成');
   }catch(e){setFFStatus('vframe-st','错误: '+e.message)}
   setFFBtn('vframe-btn',false,'🖼️ 提取');
+}
+
+// ===== 清除痕迹 =====
+async function clearTraces(){
+  if(!confirm('确定要清除所有使用痕迹吗？\n\n将清除：\n• 所有缓存数据\n• Service Worker\n• 本地存储\n\n浏览器历史记录需要手动清除'))return;
+  try{
+    // 清除所有 Cache
+    var keys=await caches.keys();
+    for(var i=0;i<keys.length;i++)await caches.delete(keys[i]);
+    // 注销 Service Worker
+    if('serviceWorker' in navigator){
+      var regs=await navigator.serviceWorker.getRegistrations();
+      for(var i=0;i<regs.length;i++)await regs[i].unregister();
+    }
+    // 清除 localStorage 和 sessionStorage
+    try{localStorage.clear()}catch(e){}
+    try{sessionStorage.clear()}catch(e){}
+    // 清除 IndexedDB
+    try{if(indexedDB.databases){var dbs=await indexedDB.databases();for(var i=0;i<dbs.length;i++)indexedDB.deleteDatabase(dbs[i].name)}}catch(e){}
+    alert('✅ 痕迹已清除！\n\n浏览器历史记录请手动清除：\n• Chrome/Edge: Ctrl+Shift+Delete\n• Safari: 设置→清除历史记录');
+  }catch(e){alert('清除完成（部分功能可能需要手动清除）')}
 }
 
 // ===== Service Worker =====
