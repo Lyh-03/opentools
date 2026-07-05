@@ -70,21 +70,9 @@ a{color:var(--accent2);text-decoration:none}
 <div class="overlay" id="ov" onclick="tSidebar()"></div>
 <nav class="sidebar" id="sb">
   <div class="sb-hd"><h1>🛠️ 体院办公</h1><p>所有工具本地运行，数据无留痕</p><p style="margin-top:6px;font-size:.68rem;color:var(--accent2)">此工具箱主要服务于Qlnu-体育学院各级办公室</p></div>
-    <div class="nav-g">
-    <div class="nav-l">音视频处理</div>
-    <div class="ni" data-t="v2a"><span class="ic">🎵</span>视频提取音频</div>
-    <div class="ni" data-t="acv"><span class="ic">🔄</span>音频格式转换</div>
-    <div class="ni" data-t="vcv"><span class="ic">🎬</span>视频格式转换</div>
-    <div class="ni" data-t="vcut"><span class="ic">✂️</span>视频剪切</div>
-    <div class="ni" data-t="vframe"><span class="ic">🖼️</span>视频提取帧图片</div>
-  </div>
-  <div class="nav-g">
-    <div class="nav-l">压缩</div>
-    <div class="ni on" data-t="zip"><span class="ic">📦</span>ZIP 压缩/解压</div>
-  </div>
   <div class="nav-g">
     <div class="nav-l">文件转换</div>
-    <div class="ni" data-t="imgcv"><span class="ic">🖼️</span>图片格式转换</div>
+    <div class="ni on" data-t="imgcv"><span class="ic">🖼️</span>图片格式转换</div>
     <div class="ni" data-t="pdf"><span class="ic">📄</span>图片转 PDF</div>
     <div class="ni" data-t="word"><span class="ic">📘</span>Word 文档转换</div>
     <div class="ni" data-t="excel"><span class="ic">📗</span>Excel 表格转换</div>
@@ -95,6 +83,18 @@ a{color:var(--accent2);text-decoration:none}
     <div class="ni" data-t="img2ico"><span class="ic">🔷</span>图片转 ICO</div>
     <div class="ni" data-t="imgmerge"><span class="ic">🧩</span>图片拼接</div>
     <div class="ni" data-t="txt2img"><span class="ic">🆎</span>文字转图片</div>
+  </div>
+  <div class="nav-g">
+    <div class="nav-l">压缩</div>
+    <div class="ni" data-t="zip"><span class="ic">📦</span>ZIP 压缩/解压</div>
+  </div>
+  <div class="nav-g">
+    <div class="nav-l">音视频处理</div>
+    <div class="ni" data-t="v2a"><span class="ic">🎵</span>视频提取音频</div>
+    <div class="ni" data-t="acv"><span class="ic">🔄</span>音频格式转换</div>
+    <div class="ni" data-t="vcv"><span class="ic">🎬</span>视频格式转换</div>
+    <div class="ni" data-t="vcut"><span class="ic">✂️</span>视频剪切</div>
+    <div class="ni" data-t="vframe"><span class="ic">🖼️</span>视频提取帧图片</div>
   </div>
   <div class="nav-g">
     <div class="nav-l">图片工具</div>
@@ -123,13 +123,13 @@ a{color:var(--accent2);text-decoration:none}
 <div class="main">
   <div class="top">
     <button class="menu-btn" onclick="tSidebar()">☰</button>
-    <h2 id="tt">ZIP 压缩/解压</h2>
-    <span class="d" id="td">压缩文件为 ZIP 或解压</span>
+    <h2 id="tt">图片格式转换</h2>
+    <span class="d" id="td">PNG/JPG/WebP/BMP 互转</span>
   </div>
   <div class="cnt">
 
     <!-- 图片格式转换 -->
-    <div class="tp" id="p-imgcv">
+    <div class="tp on" id="p-imgcv">
       <div class="sec">
         <div class="st">📤 选择图片</div>
         <div class="dz" id="ic-dz"><div class="big">🖼️</div><p>点击选择或拖放图片</p></div>
@@ -543,7 +543,7 @@ console.log('Hi');
     </div>
 
     <!-- ZIP -->
-    <div class="tp on" id="p-zip">
+    <div class="tp" id="p-zip">
       <div class="sec">
         <div class="st">📦 ZIP 压缩</div>
         <div class="dz" id="zip-dz"><div class="big">📦</div><p>选择要压缩的文件</p></div>
