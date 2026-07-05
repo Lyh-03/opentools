@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://lyh-03.github.io/opentools/sitemap.xml
