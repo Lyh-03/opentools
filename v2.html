@@ -13,7 +13,7 @@
 <style>
 :root{--bg:#0f0f13;--sidebar:#14141c;--card:#1a1a24;--hover:#22223a;--accent:#6c63ff;--accent2:#00d2ff;--pink:#ec4899;--green:#22c55e;--orange:#f59e0b;--red:#ef4444;--text:#e4e4e7;--dim:#8888a0;--border:#2a2a3d;--radius:12px}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC',sans-serif;background:url(bg.jpg) center/cover no-repeat fixed;color:var(--text);height:100vh;display:flex;overflow:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC',sans-serif;background:linear-gradient(135deg,#0f0f13 0%,#1a1a2e 50%,#0f0f13 100%);color:var(--text);height:100vh;display:flex;overflow:hidden}
 ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 .sidebar{width:220px;background:rgba(20,20,28,0.25);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-right:1px solid rgba(42,42,61,0.25);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;max-height:calc(100vh - 40px)}
 .sb-hd{padding:18px 14px 10px;text-align:center;border-bottom:1px solid rgba(42,42,61,0.2)}
@@ -71,12 +71,53 @@ a{color:var(--accent2);text-decoration:none}
   .overlay.show{display:block}
   .footer-bar{left:0!important;right:0!important}
 }
+
+/* 搜索框 */
+.search-box{padding:8px 10px;position:relative}
+.search-box input{width:100%;padding:8px 12px 8px 32px;border-radius:10px;border:1px solid rgba(42,42,61,0.3);background:rgba(15,15,19,0.4);color:var(--text);font-size:.82rem;outline:none}
+.search-box input:focus{border-color:var(--accent)}
+.search-box .s-icon{position:absolute;left:18px;top:50%;transform:translateY(-50%);font-size:.85rem;opacity:.5}
+.search-box input::placeholder{color:var(--dim)}
+/* 收藏星标 */
+.ni .star{margin-left:auto;cursor:pointer;opacity:0;font-size:.75rem;transition:opacity .2s;color:var(--orange)}
+.ni:hover .star,.ni .star.active{opacity:1}
+.ni .star.active{color:var(--orange)}
+/* 浅色模式 */
+body.light{--bg:#f0f0f5;--sidebar:#e8e8f0;--card:#ffffff;--hover:#d8d8e8;--text:#1a1a2e;--dim:#666680;--border:#d0d0e0}
+body.light .sidebar{background:rgba(232,232,240,0.85)}
+body.light .sec{background:rgba(255,255,255,0.7)}
+body.light .top{background:rgba(232,232,240,0.6)}
+body.light input,body.light select,body.light textarea{background:rgba(240,240,245,0.6);color:#1a1a2e;border-color:rgba(208,208,224,0.5)}
+body.light .dz{background:rgba(240,240,245,0.4);border-color:rgba(208,208,224,0.5)}
+body.light .rb{background:rgba(240,240,245,0.5)}
+body.light .chip{background:rgba(240,240,245,0.5)}
+body.light .ni:hover{background:rgba(108,99,255,.08)}
+body.light .footer-bar{background:rgba(232,232,240,0.8);color:rgba(100,100,120,0.6)}
+/* 按钮加载态 */
+.btn.loading{opacity:.6;cursor:wait}
+/* 移动端适配 */
+@media(max-width:768px){
+  .row{flex-direction:column}
+  .row>*{min-width:100%}
+  .cnt{padding:12px;padding-bottom:90px}
+  .sec{padding:14px}
+}
+@media(max-width:480px){
+  .sidebar{width:200px}
+  .cnt{padding:10px;padding-bottom:90px}
+  .sec{padding:12px;margin-bottom:10px}
+  .btn{padding:8px 14px;font-size:.82rem}
+}
 </style>
 </head>
 <body>
 <div class="overlay" id="ov" onclick="tSidebar()"></div>
 <nav class="sidebar" id="sb">
   <div class="sb-hd"><h1>🛠️ 体院办公</h1><p>所有工具本地运行，数据无留痕</p><p style="margin-top:6px;font-size:.68rem;color:var(--accent2)">此工具箱主要服务于Qlnu-体育学院各级办公室</p></div>
+  <div class="search-box">
+    <span class="s-icon">🔍</span>
+    <input type="text" id="toolSearch" placeholder="搜索工具..." oninput="filterTools(this.value)">
+  </div>
   <div class="nav-g open">
     <div class="nav-l">文件转换</div>
     <div class="ni on" data-t="imgcv"><span class="ic">🖼️</span>图片格式转换</div>
@@ -170,8 +211,10 @@ a{color:var(--accent2);text-decoration:none}
     <button class="menu-btn" onclick="tSidebar()">☰</button>
     <h2 id="tt">图片格式转换</h2>
     <span class="d" id="td">PNG/JPG/WebP/BMP 互转</span>
-    <div style="margin-left:auto">
-      <button class="btn bo bs" onclick="clearTraces()" style="white-space:nowrap">🧹 清除痕迹</button>
+    <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+      <button class="btn bo bs" onclick="toggleFavMode()" id="favBtn" title="收藏">⭐</button>
+      <button class="btn bo bs" onclick="toggleTheme()" id="themeBtn" title="切换主题">🌙</button>
+      <button class="btn bo bs" onclick="clearTraces()" style="white-space:nowrap">🧹</button>
     </div>
   </div>
   <div class="cnt">
@@ -865,6 +908,7 @@ document.querySelectorAll('.ni').forEach(function(el){
     if(panel)panel.classList.add('on');
     document.getElementById('tt').textContent=titles[t]||'';
     document.getElementById('td').textContent=descs[t]||'';
+    recordUsage(t);
     tSidebar(false);
   };
 });
@@ -995,8 +1039,10 @@ function csvGo(){
 
 // ===== Word 转换（单向） =====
 function wordConv(fmt,fileId,infoId){
+  if(!checkCDN(['mammoth']))return;
   var fi=document.getElementById(fileId);
   if(!fi.files.length){alert('请先选择 .docx 文件');return}
+  if(!checkFileSize(fi.files[0],50))return;
   var file=fi.files[0];
   var reader=new FileReader();
   reader.onload=async function(){
@@ -1025,6 +1071,7 @@ function wordConv(fmt,fileId,infoId){
   reader.readAsArrayBuffer(file);
 }
 function makeDocx(content,isHtml){
+  if(!checkCDN(['jszip']))return;
   if(typeof JSZip==='undefined'){dlBlob(content,'output.html','text/html');return}
   var bodyContent=isHtml?content:content.split('\n').map(function(l){return '<w:p><w:r><w:t xml:space="preserve">'+esc(l)+'</w:t></w:r></w:p>'}).join('');
   var xml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+(isHtml?'<w:p><w:r><w:t xml:space="preserve">'+content+'</w:t></w:r></w:p>':bodyContent)+'</w:body></w:document>';
@@ -1040,6 +1087,7 @@ function htmlToWord2(){var h=document.getElementById('h2w-in').value;if(!h.trim(
 
 // ===== Excel 转换（单向） =====
 function xlsConv(fmt,fileId,infoId){
+  if(!checkCDN(['xlsx']))return;
   var fi=document.getElementById(fileId);
   if(!fi.files.length){alert('请先选择 Excel 文件');return}
   var reader=new FileReader();
@@ -1060,6 +1108,7 @@ function xlsConv(fmt,fileId,infoId){
   reader.readAsArrayBuffer(fi.files[0]);
 }
 function csvToXls2(inputId){
+  if(!checkCDN(['xlsx']))return;
   var csv=document.getElementById(inputId).value.trim();
   if(!csv){alert('请输入 CSV');return}
   try{
@@ -1071,6 +1120,7 @@ function csvToXls2(inputId){
   }catch(e){alert('转换失败: '+e.message)}
 }
 function jsonToXls2(inputId){
+  if(!checkCDN(['xlsx']))return;
   var json=document.getElementById(inputId).value.trim();
   if(!json){alert('请输入 JSON');return}
   try{
@@ -1704,6 +1754,116 @@ async function vframeGo(){
   }catch(e){setFFStatus('vframe-st','错误: '+e.message)}
   setFFBtn('vframe-btn',false,'🖼️ 提取');
 }
+
+
+// ===== 文件大小检查 =====
+function checkFileSize(file,maxMB){
+  if(file.size>maxMB*1024*1024){
+    alert('⚠️ 文件过大（'+(file.size/1024/1024).toFixed(1)+'MB），超过'+maxMB+'MB限制，浏览器可能卡死');
+    return false;
+  }
+  return true;
+}
+
+// ===== CDN 加载检测 =====
+var cdnLoaded={mammoth:false,xlsx:false,jszip:false};
+try{if(mammoth)cdnLoaded.mammoth=true}catch(e){}
+try{if(XLSX)cdnLoaded.xlsx=true}catch(e){}
+try{if(JSZip)cdnLoaded.jszip=true}catch(e){}
+function checkCDN(libs){
+  var missing=[];
+  if(libs.includes('mammoth')&&!cdnLoaded.mammoth)missing.push('mammoth(Word)');
+  if(libs.includes('xlsx')&&!cdnLoaded.xlsx)missing.push('xlsx(Excel)');
+  if(libs.includes('jszip')&&!cdnLoaded.jszip)missing.push('jszip(压缩)');
+  if(missing.length){
+    alert('⏳ 相关库加载中或加载失败：'+missing.join('、')+'\n请检查网络后刷新重试');
+    return false;
+  }
+  return true;
+}
+
+// ===== 工具搜索 =====
+function filterTools(keyword){
+  keyword=keyword.toLowerCase().trim();
+  document.querySelectorAll('.ni[data-t]').forEach(function(el){
+    var t=el.getAttribute('data-t');
+    var title=(titles[t]||'').toLowerCase();
+    var desc=(descs[t]||'').toLowerCase();
+    var text=el.textContent.toLowerCase();
+    if(!keyword||title.includes(keyword)||desc.includes(keyword)||text.includes(keyword)){
+      el.style.display='';
+    }else{
+      el.style.display='none';
+    }
+  });
+  if(keyword){
+    document.querySelectorAll('.nav-g').forEach(function(g){g.classList.add('open')});
+  }
+}
+
+// ===== 收藏功能 =====
+var favs=JSON.parse(localStorage.getItem('toolbox_favs')||'[]');
+var favMode=false;
+function toggleFavMode(){
+  favMode=!favMode;
+  document.getElementById('favBtn').classList.toggle('bo',!favMode);
+  document.getElementById('favBtn').classList.toggle('bp',favMode);
+  renderFavs();
+}
+function toggleFav(tool){
+  var idx=favs.indexOf(tool);
+  if(idx>=0)favs.splice(idx,1);else favs.push(tool);
+  localStorage.setItem('toolbox_favs',JSON.stringify(favs));
+  renderFavs();
+}
+function renderFavs(){
+  document.querySelectorAll('.ni[data-t]').forEach(function(el){
+    var t=el.getAttribute('data-t');
+    var star=el.querySelector('.star');
+    if(star){
+      star.classList.toggle('active',favs.includes(t));
+      star.textContent=favs.includes(t)?'★':'☆';
+    }
+    if(favMode&&!favs.includes(t)){
+      el.style.display='none';
+    }else if(favMode){
+      el.style.display='';
+    }
+  });
+}
+document.querySelectorAll('.ni[data-t]').forEach(function(el){
+  var t=el.getAttribute('data-t');
+  var star=document.createElement('span');
+  star.className='star'+(favs.includes(t)?' active':'');
+  star.textContent=favs.includes(t)?'★':'☆';
+  star.onclick=function(e){e.stopPropagation();toggleFav(t)};
+  el.appendChild(star);
+});
+
+// ===== 深色/浅色模式 =====
+var isLight=localStorage.getItem('toolbox_theme')==='light';
+function toggleTheme(){
+  isLight=!isLight;
+  document.body.classList.toggle('light',isLight);
+  document.getElementById('themeBtn').textContent=isLight?'☀️':'🌙';
+  localStorage.setItem('toolbox_theme',isLight?'light':'dark');
+}
+if(isLight){document.body.classList.add('light');setTimeout(function(){document.getElementById('themeBtn').textContent='☀️'},100)}
+
+// ===== 使用统计 =====
+var stats=JSON.parse(localStorage.getItem('toolbox_stats')||'{}');
+function recordUsage(tool){
+  stats[tool]=(stats[tool]||0)+1;
+  localStorage.setItem('toolbox_stats',JSON.stringify(stats));
+}
+function sortByUsage(){
+  document.querySelectorAll('.nav-g').forEach(function(group){
+    var items=Array.from(group.querySelectorAll('.ni[data-t]'));
+    items.sort(function(a,b){return (stats[b.getAttribute('data-t')]||0)-(stats[a.getAttribute('data-t')]||0)});
+    items.forEach(function(item){group.appendChild(item)});
+  });
+}
+sortByUsage();
 
 // ===== 清除痕迹 =====
 async function clearTraces(){
