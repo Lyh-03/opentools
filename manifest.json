@@ -1,7 +1,7 @@
 {
-  "name": "开源工具箱",
-  "short_name": "工具箱",
-  "description": "精选开源免费工具合集 — 文件转换 · OCR · 设计 · 笔记 · 办公",
+  "name": "体院办公",
+  "short_name": "体院办公",
+  "description": "体院办公工具箱 - 所有工具本地运行，数据无留痕",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0f0f13",
