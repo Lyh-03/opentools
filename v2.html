@@ -15,7 +15,7 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC',sans-serif;background:url(bg.jpg) center/cover no-repeat fixed;color:var(--text);height:100vh;display:flex;overflow:hidden}
 ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-.sidebar{width:220px;background:rgba(20,20,28,0.25);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-right:1px solid rgba(42,42,61,0.25);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sidebar{width:220px;background:rgba(20,20,28,0.25);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-right:1px solid rgba(42,42,61,0.25);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;max-height:calc(100vh - 40px)}
 .sb-hd{padding:18px 14px 10px;text-align:center;border-bottom:1px solid rgba(42,42,61,0.2)}
 .sb-hd h1{font-size:1.1rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .sb-hd p{font-size:.7rem;color:var(--dim);margin-top:3px}
@@ -69,7 +69,7 @@ a{color:var(--accent2);text-decoration:none}
   .menu-btn{display:block}
   .cnt{padding:14px;padding-bottom:90px}
   .overlay.show{display:block}
-  .footer-bar{left:0!important}
+  .footer-bar{left:0!important;right:0!important}
 }
 </style>
 </head>
@@ -852,7 +852,8 @@ async function pdfGo(){
   var w=window.open('','','width=800,height=600');
   w.document.write('<!DOCTYPE html><html><head><title>PDF</title><style>@page{size:A4;margin:10mm}body{margin:0}img{max-width:100%;max-height:90vh;display:block;margin:5mm auto;page-break-after:always}</style></head><body>');
   imgs.forEach(function(img){w.document.write('<img src="'+img.src+'">')});
-  w.document.write('<div class="footer-bar" style="position:fixed;bottom:0;left:220px;right:0;text-align:center;padding:8px 20px;font-size:0.72rem;color:rgba(136,136,160,0.5);line-height:1.6;background:rgba(15,15,19,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:50;border-top:1px solid rgba(42,42,61,0.2)">
+  w.document.write('
+<div class="footer-bar" style="position:fixed;bottom:0;left:0;right:0;text-align:center;padding:8px 20px;font-size:0.72rem;color:rgba(136,136,160,0.5);line-height:1.6;background:rgba(15,15,19,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:50;border-top:1px solid rgba(42,42,61,0.2)">
   <span>📌 所有工具本地运行，数据无痕 | 网页开发：刘奕赫 齐鲁师范体育学院 学号：2024146088 | 如有问题欢迎反馈</span>
 </div>
 </body></html>');w.document.close();
@@ -873,7 +874,8 @@ function mdRender(){
     .replace(/^- (.+)$/gm,'<li>$1</li>')
     .replace(/\n/g,'<br>');
   document.getElementById('md-out').innerHTML=html;
-  return '<!DOCTYPE html><html><head><meta charset="utf-8"><title>MD Export</title><style>body{font-family:system-ui;max-width:800px;margin:40px auto;padding:0 20px;line-height:1.7}code{background:#f4f4f4;padding:2px 6px;border-radius:4px}pre{background:#f4f4f4;padding:16px;border-radius:8px}</style></head><body>'+html+'<div class="footer-bar" style="position:fixed;bottom:0;left:220px;right:0;text-align:center;padding:8px 20px;font-size:0.72rem;color:rgba(136,136,160,0.5);line-height:1.6;background:rgba(15,15,19,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:50;border-top:1px solid rgba(42,42,61,0.2)">
+  return '<!DOCTYPE html><html><head><meta charset="utf-8"><title>MD Export</title><style>body{font-family:system-ui;max-width:800px;margin:40px auto;padding:0 20px;line-height:1.7}code{background:#f4f4f4;padding:2px 6px;border-radius:4px}pre{background:#f4f4f4;padding:16px;border-radius:8px}</style></head><body>'+html+'
+<div class="footer-bar" style="position:fixed;bottom:0;left:0;right:0;text-align:center;padding:8px 20px;font-size:0.72rem;color:rgba(136,136,160,0.5);line-height:1.6;background:rgba(15,15,19,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:50;border-top:1px solid rgba(42,42,61,0.2)">
   <span>📌 所有工具本地运行，数据无痕 | 网页开发：刘奕赫 齐鲁师范体育学院 学号：2024146088 | 如有问题欢迎反馈</span>
 </div>
 </body></html>';
@@ -919,7 +921,8 @@ function wordConv(fmt,fileId,infoId){
       document.getElementById(infoId).innerHTML='<span class="ok">⏳</span> 转换中...';
       if(fmt==='html'){
         var result=await mammoth.convertToHtml({arrayBuffer:reader.result});
-        var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+file.name+'</title><style>body{font-family:system-ui;max-width:800px;margin:40px auto;padding:0 20px;line-height:1.7}</style></head><body>'+result.value+'<div class="footer-bar" style="position:fixed;bottom:0;left:220px;right:0;text-align:center;padding:8px 20px;font-size:0.72rem;color:rgba(136,136,160,0.5);line-height:1.6;background:rgba(15,15,19,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:50;border-top:1px solid rgba(42,42,61,0.2)">
+        var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+file.name+'</title><style>body{font-family:system-ui;max-width:800px;margin:40px auto;padding:0 20px;line-height:1.7}</style></head><body>'+result.value+'
+<div class="footer-bar" style="position:fixed;bottom:0;left:0;right:0;text-align:center;padding:8px 20px;font-size:0.72rem;color:rgba(136,136,160,0.5);line-height:1.6;background:rgba(15,15,19,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:50;border-top:1px solid rgba(42,42,61,0.2)">
   <span>📌 所有工具本地运行，数据无痕 | 网页开发：刘奕赫 齐鲁师范体育学院 学号：2024146088 | 如有问题欢迎反馈</span>
 </div>
 </body></html>';
@@ -934,7 +937,8 @@ function wordConv(fmt,fileId,infoId){
       }else if(fmt==='pdf'){
         var result=await mammoth.convertToHtml({arrayBuffer:reader.result});
         var w=window.open('','','width=800,height=600');
-        w.document.write('<!DOCTYPE html><html><head><title>'+file.name+'</title><style>@page{size:A4;margin:20mm}body{font-family:system-ui;line-height:1.7}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ddd;padding:8px}img{max-width:100%}</style></head><body>'+result.value+'<div class="footer-bar" style="position:fixed;bottom:0;left:220px;right:0;text-align:center;padding:8px 20px;font-size:0.72rem;color:rgba(136,136,160,0.5);line-height:1.6;background:rgba(15,15,19,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:50;border-top:1px solid rgba(42,42,61,0.2)">
+        w.document.write('<!DOCTYPE html><html><head><title>'+file.name+'</title><style>@page{size:A4;margin:20mm}body{font-family:system-ui;line-height:1.7}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ddd;padding:8px}img{max-width:100%}</style></head><body>'+result.value+'
+<div class="footer-bar" style="position:fixed;bottom:0;left:0;right:0;text-align:center;padding:8px 20px;font-size:0.72rem;color:rgba(136,136,160,0.5);line-height:1.6;background:rgba(15,15,19,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:50;border-top:1px solid rgba(42,42,61,0.2)">
   <span>📌 所有工具本地运行，数据无痕 | 网页开发：刘奕赫 齐鲁师范体育学院 学号：2024146088 | 如有问题欢迎反馈</span>
 </div>
 </body></html>');
@@ -973,7 +977,8 @@ function xlsConv(fmt,fileId,infoId){
       var name=fi.files[0].name.replace(/\.[^.]+$/,'');
       if(fmt==='csv'){var csv=XLSX.utils.sheet_to_csv(sheet);dlBlob(csv,name+'.csv','text/csv')}
       else if(fmt==='json'){var json=JSON.stringify(XLSX.utils.sheet_to_json(sheet),null,2);dlBlob(json,name+'.json','application/json')}
-      else if(fmt==='html'){var html=XLSX.utils.sheet_to_html(sheet);dlBlob('<!DOCTYPE html><html><head><meta charset="utf-8"><style>table{border-collapse:collapse;width:100%}td,th{border:1px solid #ddd;padding:6px}</style></head><body>'+html+'<div class="footer-bar" style="position:fixed;bottom:0;left:220px;right:0;text-align:center;padding:8px 20px;font-size:0.72rem;color:rgba(136,136,160,0.5);line-height:1.6;background:rgba(15,15,19,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:50;border-top:1px solid rgba(42,42,61,0.2)">
+      else if(fmt==='html'){var html=XLSX.utils.sheet_to_html(sheet);dlBlob('<!DOCTYPE html><html><head><meta charset="utf-8"><style>table{border-collapse:collapse;width:100%}td,th{border:1px solid #ddd;padding:6px}</style></head><body>'+html+'
+<div class="footer-bar" style="position:fixed;bottom:0;left:0;right:0;text-align:center;padding:8px 20px;font-size:0.72rem;color:rgba(136,136,160,0.5);line-height:1.6;background:rgba(15,15,19,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:50;border-top:1px solid rgba(42,42,61,0.2)">
   <span>📌 所有工具本地运行，数据无痕 | 网页开发：刘奕赫 齐鲁师范体育学院 学号：2024146088 | 如有问题欢迎反馈</span>
 </div>
 </body></html>',name+'.html','text/html')}
@@ -1045,7 +1050,8 @@ function txt2pdf(){
   var size=document.getElementById('t2p-size').value;
   var orient=document.getElementById('t2p-orient').value;
   var w=window.open('','','width=800,height=600');
-  w.document.write('<!DOCTYPE html><html><head><title>PDF</title><style>@page{size:A4;margin:20mm;'+(orient==='landscape'?'size:A4 landscape':'')+'}body{font-family:system-ui,sans-serif;font-size:'+size+'px;line-height:1.8;white-space:pre-wrap;word-wrap:break-word}@media print{body{margin:0}}</style></head><body>'+text.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'<div class="footer-bar" style="position:fixed;bottom:0;left:220px;right:0;text-align:center;padding:8px 20px;font-size:0.72rem;color:rgba(136,136,160,0.5);line-height:1.6;background:rgba(15,15,19,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:50;border-top:1px solid rgba(42,42,61,0.2)">
+  w.document.write('<!DOCTYPE html><html><head><title>PDF</title><style>@page{size:A4;margin:20mm;'+(orient==='landscape'?'size:A4 landscape':'')+'}body{font-family:system-ui,sans-serif;font-size:'+size+'px;line-height:1.8;white-space:pre-wrap;word-wrap:break-word}@media print{body{margin:0}}</style></head><body>'+text.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'
+<div class="footer-bar" style="position:fixed;bottom:0;left:0;right:0;text-align:center;padding:8px 20px;font-size:0.72rem;color:rgba(136,136,160,0.5);line-height:1.6;background:rgba(15,15,19,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:50;border-top:1px solid rgba(42,42,61,0.2)">
   <span>📌 所有工具本地运行，数据无痕 | 网页开发：刘奕赫 齐鲁师范体育学院 学号：2024146088 | 如有问题欢迎反馈</span>
 </div>
 </body></html>');
@@ -1656,7 +1662,8 @@ async function clearTraces(){
 // ===== Service Worker =====
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').then(function(r){console.log('SW registered, will self-destruct')})}
 </script>
-<div class="footer-bar" style="position:fixed;bottom:0;left:220px;right:0;text-align:center;padding:8px 20px;font-size:0.72rem;color:rgba(136,136,160,0.5);line-height:1.6;background:rgba(15,15,19,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:50;border-top:1px solid rgba(42,42,61,0.2)">
+
+<div class="footer-bar" style="position:fixed;bottom:0;left:0;right:0;text-align:center;padding:8px 20px;font-size:0.72rem;color:rgba(136,136,160,0.5);line-height:1.6;background:rgba(15,15,19,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:50;border-top:1px solid rgba(42,42,61,0.2)">
   <span>📌 所有工具本地运行，数据无痕 | 网页开发：刘奕赫 齐鲁师范体育学院 学号：2024146088 | 如有问题欢迎反馈</span>
 </div>
 </body>
