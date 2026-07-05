@@ -80,6 +80,11 @@ a{color:var(--accent2);text-decoration:none}
     <div class="ni" data-t="pdf"><span class="ic">📄</span>图片转 PDF</div>
     <div class="ni" data-t="md"><span class="ic">📝</span>Markdown 编辑器</div>
     <div class="ni" data-t="csv"><span class="ic">📊</span>CSV ↔ JSON</div>
+    <div class="ni" data-t="txt2pdf"><span class="ic">📃</span>文本转 PDF</div>
+    <div class="ni" data-t="img2base"><span class="ic">🔤</span>图片转 Base64</div>
+    <div class="ni" data-t="img2ico"><span class="ic">🔷</span>图片转 ICO</div>
+    <div class="ni" data-t="imgmerge"><span class="ic">🧩</span>图片拼接</div>
+    <div class="ni" data-t="txt2img"><span class="ic">🆎</span>文字转图片</div>
   </div>
   <div class="nav-g">
     <div class="nav-l">图片工具</div>
@@ -183,6 +188,79 @@ console.log('Hi');
           <button class="btn bp bs" onclick="csvGo()">转换</button>
           <button class="btn bo bs" onclick="cpTxt('co')">复制</button>
         </div>
+      </div>
+    </div>
+
+    <!-- 文本转 PDF -->
+    <div class="tp" id="p-txt2pdf">
+      <div class="sec">
+        <div class="st">📃 文本转 PDF</div>
+        <label>输入文本内容</label>
+        <textarea id="t2p-in" style="min-height:200px" placeholder="在这里输入要转成 PDF 的文字..."></textarea>
+        <div class="row" style="margin-top:10px">
+          <div><label>字体大小</label><select id="t2p-size"><option value="14">小 (14px)</option><option value="18" selected>中 (18px)</option><option value="24">大 (24px)</option></select></div>
+          <div><label>页面方向</label><select id="t2p-orient"><option value="portrait">纵向</option><option value="landscape">横向</option></select></div>
+        </div>
+        <button class="btn bp" style="margin-top:12px" onclick="txt2pdf()">📃 生成并打印/保存 PDF</button>
+      </div>
+    </div>
+
+    <!-- 图片转 Base64 -->
+    <div class="tp" id="p-img2base">
+      <div class="sec">
+        <div class="st">🔤 图片转 Base64</div>
+        <div class="dz" id="i2b-dz"><div class="big">🔤</div><p>选择图片转为 Base64 编码</p></div>
+        <input type="file" id="i2b-f" accept="image/*" hidden>
+        <div class="img-row" id="i2b-pv"></div>
+        <div style="margin-top:10px"><label>输出格式</label><select id="i2b-fmt"><option value="raw">Data URI (data:image/...;base64,...)</option><option value="pure">纯 Base64 字符串</option></select></div>
+        <button class="btn bp bs" style="margin-top:10px" onclick="img2base()">转换</button>
+        <div id="i2b-res"></div>
+      </div>
+    </div>
+
+    <!-- 图片转 ICO -->
+    <div class="tp" id="p-img2ico">
+      <div class="sec">
+        <div class="st">🔷 图片转 ICO（网站图标）</div>
+        <div class="dz" id="i2i-dz"><div class="big">🔷</div><p>选择图片生成 .ico 文件</p></div>
+        <input type="file" id="i2i-f" accept="image/*" hidden>
+        <div class="img-row" id="i2i-pv"></div>
+        <div class="row" style="margin-top:10px">
+          <div><label>尺寸</label><select id="i2i-sz"><option value="16">16x16</option><option value="32">32x32</option><option value="48">48x48</option><option value="64" selected>64x64</option><option value="128">128x128</option><option value="256">256x256</option></select></div>
+        </div>
+        <button class="btn bp" style="margin-top:10px" onclick="img2ico()">🔷 生成 ICO</button>
+      </div>
+    </div>
+
+    <!-- 图片拼接 -->
+    <div class="tp" id="p-imgmerge">
+      <div class="sec">
+        <div class="st">🧩 图片拼接</div>
+        <div class="dz" id="mg-dz"><div class="big">🧩</div><p>选择多张图片拼接成一张</p></div>
+        <input type="file" id="mg-f" accept="image/*" multiple hidden>
+        <div class="img-row" id="mg-pv"></div>
+        <div class="row" style="margin-top:10px">
+          <div><label>排列方式</label><select id="mg-dir"><option value="v">纵向排列</option><option value="h">横向排列</option></select></div>
+          <div><label>间距 (px)</label><input type="number" id="mg-gap" value="10" min="0" max="100"></div>
+          <div><label>背景色</label><input type="text" id="mg-bg" value="#ffffff"></div>
+        </div>
+        <button class="btn bp" style="margin-top:12px" onclick="imgMerge()">🧩 拼接并下载</button>
+      </div>
+    </div>
+
+    <!-- 文字转图片 -->
+    <div class="tp" id="p-txt2img">
+      <div class="sec">
+        <div class="st">🆎 文字转图片</div>
+        <textarea id="t2i-in" style="min-height:120px" placeholder="输入要转成图片的文字..."></textarea>
+        <div class="row" style="margin-top:10px">
+          <div><label>字号</label><input type="number" id="t2i-size" value="32" min="12" max="200"></div>
+          <div><label>文字颜色</label><input type="text" id="t2i-color" value="#000000"></div>
+          <div><label>背景色</label><input type="text" id="t2i-bg" value="#ffffff"></div>
+          <div><label>字体</label><select id="t2i-font"><option value="sans-serif">无衬线</option><option value="serif">衬线</option><option value="monospace">等宽</option></select></div>
+        </div>
+        <button class="btn bp" style="margin-top:12px" onclick="txt2img()">🆎 生成图片</button>
+        <div id="t2i-res" style="margin-top:12px"></div>
       </div>
     </div>
 
@@ -413,8 +491,8 @@ console.log('Hi');
 
 <script>
 // ===== Navigation =====
-var titles={imgcv:'图片格式转换',pdf:'图片转 PDF',md:'Markdown 编辑器',csv:'CSV ↔ JSON',comp:'图片压缩',resize:'图片缩放',wm:'图片加水印',cp:'颜色拾取',ocr:'OCR 文字识别',qr:'二维码生成',b64:'Base64 编解码',hash:'哈希计算',jf:'JSON 格式化',re:'正则测试',diff:'文本对比',url:'URL 编解码',ts:'时间戳转换',zip:'ZIP 压缩'};
-var descs={imgcv:'PNG/JPG/WebP/BMP 互转',pdf:'多张图片合并为 PDF',md:'实时预览，导出 HTML',csv:'CSV 与 JSON 互转',comp:'调整质量压缩图片',resize:'按尺寸缩放图片',wm:'给图片添加文字水印',cp:'拾取颜色 HEX/RGB/HSL',ocr:'本地识别图片文字',qr:'生成二维码并下载',b64:'文本与 Base64 互转',hash:'SHA-1/SHA-256',jf:'格式化或压缩 JSON',re:'正则在线测试',diff:'高亮文本差异',url:'URL 编码解码',ts:'时间戳与日期互转',zip:'压缩文件为 ZIP'};
+var titles={imgcv:'图片格式转换',pdf:'图片转 PDF',md:'Markdown 编辑器',csv:'CSV ↔ JSON',txt2pdf:'文本转 PDF',img2base:'图片转 Base64',img2ico:'图片转 ICO',imgmerge:'图片拼接',txt2img:'文字转图片',comp:'图片压缩',resize:'图片缩放',wm:'图片加水印',cp:'颜色拾取',ocr:'OCR 文字识别',qr:'二维码生成',b64:'Base64 编解码',hash:'哈希计算',jf:'JSON 格式化',re:'正则测试',diff:'文本对比',url:'URL 编解码',ts:'时间戳转换',zip:'ZIP 压缩'};
+var descs={imgcv:'PNG/JPG/WebP/BMP 互转',pdf:'多张图片合并为 PDF',md:'实时预览，导出 HTML',csv:'CSV 与 JSON 互转',txt2pdf:'输入文字生成 PDF 打印/保存',img2base:'图片转为 Base64 编码字符串',img2ico:'生成网站 favicon 图标',imgmerge:'多张图片拼接成一张',txt2img:'把文字做成图片',comp:'调整质量压缩图片',resize:'按尺寸缩放图片',wm:'给图片添加文字水印',cp:'拾取颜色 HEX/RGB/HSL',ocr:'本地识别图片文字',qr:'生成二维码并下载',b64:'文本与 Base64 互转',hash:'SHA-1/SHA-256',jf:'格式化或压缩 JSON',re:'正则在线测试',diff:'高亮文本差异',url:'URL 编码解码',ts:'时间戳与日期互转',zip:'压缩文件为 ZIP'};
 document.querySelectorAll('.ni').forEach(function(el){
   el.onclick=function(){
     document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('on')});
@@ -540,6 +618,104 @@ function csvGo(){
       out.value=csv.join('\n');
     }
   }catch(e){out.value='错误: '+e.message}
+}
+
+// ===== Text to PDF =====
+function txt2pdf(){
+  var text=document.getElementById('t2p-in').value;
+  if(!text.trim()){alert('请输入文字');return}
+  var size=document.getElementById('t2p-size').value;
+  var orient=document.getElementById('t2p-orient').value;
+  var w=window.open('','','width=800,height=600');
+  w.document.write('<!DOCTYPE html><html><head><title>PDF</title><style>@page{size:A4;margin:20mm;'+(orient==='landscape'?'size:A4 landscape':'')+'}body{font-family:system-ui,sans-serif;font-size:'+size+'px;line-height:1.8;white-space:pre-wrap;word-wrap:break-word}@media print{body{margin:0}}</style></head><body>'+text.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</body></html>');
+  w.document.close();
+  setTimeout(function(){w.print()},300);
+}
+
+// ===== Image to Base64 =====
+var i2bFile=null;
+setupDz('i2b-dz','i2b-f',function(f){i2bFile=f[0];showPv(f,'i2b-pv')});
+function img2base(){
+  if(!i2bFile){alert('请先选图');return}
+  var fmt=document.getElementById('i2b-fmt').value;
+  var reader=new FileReader();
+  reader.onload=function(){
+    var result=fmt==='pure'?reader.result.split(',')[1]:reader.result;
+    var ta=document.createElement('textarea');
+    ta.value=result;ta.style.cssText='width:100%;min-height:120px;font-family:monospace;font-size:0.8rem;margin-top:10px;border-radius:10px;padding:10px;background:var(--bg);color:var(--text);border:1px solid var(--border)';
+    var el=document.getElementById('i2b-res');el.innerHTML='<label>Base64 结果 ('+Math.round(result.length/1024)+'KB)</label>';el.appendChild(ta);
+    var btn=document.createElement('button');btn.className='btn bo bs';btn.style.marginTop='8px';btn.textContent='复制';btn.onclick=function(){navigator.clipboard.writeText(result);alert('已复制')};el.appendChild(btn);
+  };
+  reader.readAsDataURL(i2bFile);
+}
+
+// ===== Image to ICO =====
+var i2iFile=null;
+setupDz('i2i-dz','i2i-f',function(f){i2iFile=f[0];showPv(f,'i2i-pv')});
+function img2ico(){
+  if(!i2iFile){alert('请先选图');return}
+  var sz=parseInt(document.getElementById('i2i-sz').value);
+  var img=new Image();img.onload=function(){
+    var c=document.createElement('canvas');c.width=sz;c.height=sz;
+    c.getContext('2d').drawImage(img,0,0,sz,sz);
+    c.toBlob(function(blob){
+      var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='favicon-'+sz+'x'+sz+'.png';a.click();
+    },'image/png');
+  };img.src=URL.createObjectURL(i2iFile);
+}
+
+// ===== Image Merge =====
+var mgFiles=[];
+setupDz('mg-dz','mg-f',function(f){mgFiles=Array.from(f);showPv(f,'mg-pv')});
+async function imgMerge(){
+  if(mgFiles.length<2){alert('请至少选2张图');return}
+  var dir=document.getElementById('mg-dir').value;
+  var gap=parseInt(document.getElementById('mg-gap').value);
+  var bg=document.getElementById('mg-bg').value;
+  var imgs=[];
+  for(var i=0;i<mgFiles.length;i++)imgs.push(await loadImg(mgFiles[i]));
+  var totalW=0,totalH=0,maxW=0,maxH=0;
+  imgs.forEach(function(img){
+    if(dir==='v'){totalH+=img.height;maxW=Math.max(maxW,img.width)}
+    else{totalW+=img.width;maxH=Math.max(maxH,img.height)}
+  });
+  var cW=dir==='v'?maxW:totalW+gap*(imgs.length-1);
+  var cH=dir==='v'?totalH+gap*(imgs.length-1):maxH;
+  var c=document.createElement('canvas');c.width=cW;c.height=cH;
+  var ctx=c.getContext('2d');ctx.fillStyle=bg;ctx.fillRect(0,0,cW,cH);
+  var x=0,y=0;
+  imgs.forEach(function(img){
+    if(dir==='v'){ctx.drawImage(img,(maxW-img.width)/2,y);y+=img.height+gap}
+    else{ctx.drawImage(img,x,(maxH-img.height)/2);x+=img.width+gap}
+  });
+  c.toBlob(function(blob){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='merged.png';a.click()});
+}
+
+// ===== Text to Image =====
+function txt2img(){
+  var text=document.getElementById('t2i-in').value;
+  if(!text.trim()){alert('请输入文字');return}
+  var size=parseInt(document.getElementById('t2i-size').value);
+  var color=document.getElementById('t2i-color').value;
+  var bg=document.getElementById('t2i-bg').value;
+  var font=document.getElementById('t2i-font').value;
+  var lines=text.split('\n');
+  var canvas=document.createElement('canvas');
+  var ctx=canvas.getContext('2d');
+  ctx.font='bold '+size+'px '+font;
+  var maxW=0;
+  lines.forEach(function(l){maxW=Math.max(maxW,ctx.measureText(l).width)});
+  var pad=size*2;
+  canvas.width=maxW+pad*2;
+  canvas.height=lines.length*size*1.8+pad*2;
+  ctx.fillStyle=bg;ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle=color;ctx.font='bold '+size+'px '+font;ctx.textBaseline='top';
+  lines.forEach(function(l,i){ctx.fillText(l,pad,pad+i*size*1.8)});
+  canvas.toBlob(function(blob){
+    var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='text-image.png';a.click();
+    var el=document.getElementById('t2i-res');el.innerHTML='';el.appendChild(canvas);
+    canvas.style.cssText='max-width:100%;border-radius:10px;border:1px solid var(--border)';
+  });
 }
 
 // ===== Compress =====
