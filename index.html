@@ -85,7 +85,7 @@ a{color:var(--accent2);text-decoration:none}
 .ni:hover .star,.ni .star.active{opacity:1}
 .ni .star.active{color:var(--orange)}
 /* 浅色模式 */
-body.light{--bg:#f0f0f5;--sidebar:#e8e8f0;--card:#ffffff;--hover:#d8d8e8;--text:#1a1a2e;--dim:#666680;--border:#d0d0e0}
+body.light{--bg:#f0f0f5;--sidebar:#e8e8f0;--card:#ffffff;--hover:#d8d8e8;--text:#1a1a2e;--dim:#555570;--border:#d0d0e0}
 body.light .sidebar{background:rgba(232,232,240,0.85)}
 body.light .sec{background:rgba(255,255,255,0.7)}
 body.light .top{background:rgba(232,232,240,0.6)}
@@ -94,7 +94,7 @@ body.light .dz{background:rgba(240,240,245,0.4);border-color:rgba(208,208,224,0.
 body.light .rb{background:rgba(240,240,245,0.5)}
 body.light .chip{background:rgba(240,240,245,0.5)}
 body.light .ni:hover{background:rgba(108,99,255,.08)}
-body.light .footer-bar{background:rgba(232,232,240,0.8);color:rgba(100,100,120,0.6)}
+body.light .footer-bar{background:rgba(232,232,240,0.9);color:rgba(80,80,100,0.8)}
 /* 按钮加载态 */
 .btn.loading{opacity:.6;cursor:wait}
 /* 移动端适配 */
@@ -206,7 +206,7 @@ a.ni::after{content:'↗';font-size:.6rem;margin-left:4px;opacity:.4}
     <div class="ni" data-t="ts"><span class="ic">⏱️</span>时间戳转换</div>
   </div>
   <div class="nav-g">
-    <div class="nav-l">系统工具</div>
+    <div class="nav-l">操作指南</div>
     <div class="ni" data-t="diskclean"><span class="ic">🧹</span>磁盘清理</div>
     <div class="ni" data-t="storesense"><span class="ic">📦</span>存储感知</div>
     <div class="ni" data-t="sysclean"><span class="ic">🗂️</span>系统文件清理</div>
@@ -920,10 +920,9 @@ console.log('Hi');
 <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/util.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
 <script>
 // ===== Navigation =====
 var titles={imgcv:'图片格式转换',pdf:'图片转 PDF',word2html:'Word 转 HTML',word2txt:'Word 转文本',word2md:'Word 转 Markdown',word2pdf:'Word 转 PDF',txt2word:'文本 转 Word',html2word:'HTML 转 Word',xls2csv:'Excel 转 CSV',xls2json:'Excel 转 JSON',xls2html:'Excel 转 HTML',xls2txt:'Excel 转文本',csv2xls:'CSV 转 Excel',json2xls:'JSON 转 Excel',md:'Markdown 编辑器',csv2json:'CSV 转 JSON',json2csv:'JSON 转 CSV',txt2pdf:'文本转 PDF',img2base:'图片转 Base64',img2ico:'图片转 ICO',imgmerge:'图片拼接',txt2img:'文字转图片',v2a:'视频提取音频',acv:'音频格式转换',vcv:'视频格式转换',vcut:'视频剪切',vframe:'视频提取帧图片',comp:'图片压缩',resize:'图片缩放',wm:'图片加水印',cp:'颜色拾取',ocr:'OCR 文字识别',qr:'二维码生成',b64:'Base64 编解码',hash:'哈希计算',jf:'JSON 格式化',re:'正则测试',diff:'文本对比',url:'URL 编解码',ts:'时间戳转换',zip:'ZIP 压缩',diskclean:'磁盘清理',storesense:'存储感知',sysclean:'系统文件清理',cmdclean:'CMD 一键清理'};
@@ -964,11 +963,38 @@ function dlBlob(content,name,type){
 }
 function setupDz(dzId,fileId,cb){
   var dz=document.getElementById(dzId),fi=document.getElementById(fileId);
+  var accept=fi.accept||'';
   dz.onclick=function(){fi.click()};
   dz.ondragover=function(e){e.preventDefault();dz.classList.add('drag')};
   dz.ondragleave=function(){dz.classList.remove('drag')};
-  dz.ondrop=function(e){e.preventDefault();dz.classList.remove('drag');if(e.dataTransfer.files.length)cb(e.dataTransfer.files)};
-  fi.onchange=function(){if(fi.files.length)cb(fi.files)};
+  dz.ondrop=function(e){
+    e.preventDefault();dz.classList.remove('drag');
+    var files=e.dataTransfer.files;
+    if(!files.length)return;
+    if(accept&&!matchAccept(files[0],accept)){alert('⚠️ 文件类型不支持，请选择: '+accept);return}
+    cb(files);
+  };
+  fi.onchange=function(){
+    if(!fi.files.length)return;
+    if(accept&&!matchAccept(fi.files[0],accept)){alert('⚠️ 文件类型不支持');fi.value='';return}
+    cb(fi.files);
+  };
+}
+function matchAccept(file,accept){
+  if(!accept)return true;
+  var types=accept.split(',').map(function(s){return s.trim()});
+  return types.some(function(t){
+    if(t.startsWith('.'))return file.name.toLowerCase().endsWith(t.toLowerCase());
+    if(t.endsWith('/*'))return file.type.startsWith(t.replace('/*',''));
+    return file.type===t;
+  });
+}
+function setBtnLoading(btn,loading,text){
+  if(typeof btn==='string')btn=document.getElementById(btn);
+  if(!btn)return;
+  btn.disabled=loading;
+  btn.classList.toggle('loading',loading);
+  if(text)btn.textContent=text;
 }
 function showPv(files,elId){
   var el=document.getElementById(elId);el.innerHTML='';
@@ -988,13 +1014,18 @@ function icGo(){
   var fmt=document.getElementById('ic-fmt').value;
   var q=parseInt(document.getElementById('ic-q').value)/100;
   var ext=fmt.split('/')[1]==='jpeg'?'jpg':fmt.split('/')[1];
+  var count=0;
   icFiles.forEach(function(f){
     var img=new Image();img.onload=function(){
       var c=document.createElement('canvas');c.width=img.width;c.height=img.height;
       c.getContext('2d').drawImage(img,0,0);
+      URL.revokeObjectURL(img.src);
       c.toBlob(function(blob){
-        var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+        var url=URL.createObjectURL(blob);
+        var a=document.createElement('a');a.href=url;
         a.download=f.name.replace(/\.[^.]+$/,'.'+ext);a.click();
+        setTimeout(function(){URL.revokeObjectURL(url)},1000);
+        count++;if(count===icFiles.length)alert('✅ 转换完成，共 '+count+' 个文件');
       },fmt,q);
     };img.src=URL.createObjectURL(f);
   });
@@ -1005,16 +1036,34 @@ var pdfFiles=[];
 setupDz('pdf-dz','pdf-f',function(f){pdfFiles=Array.from(f);showPv(f,'pdf-pv')});
 async function pdfGo(){
   if(!pdfFiles.length){alert('请先选图');return}
-  // Simple PDF: embed images as data URLs
-  var imgs=[];
-  for(var i=0;i<pdfFiles.length;i++){imgs.push(await loadImg(pdfFiles[i]))}
-  // Use canvas to create a simple multi-page PDF via data URI
-  // Since jsPDF is CDN-dependent, we'll create a printable page instead
-  var w=window.open('','','width=800,height=600');
-  w.document.write('<!DOCTYPE html><html><head><title>PDF</title><style>@page{size:A4;margin:10mm}body{margin:0}img{max-width:100%;max-height:90vh;display:block;margin:5mm auto;page-break-after:always}</style></head><body>');
-  imgs.forEach(function(img){w.document.write('<img src="'+img.src+'">')});
-  w.document.write('</body></html>');w.document.close();
-  w.print();
+  if(typeof window.jspdf==='undefined'){
+    // Fallback: open print window
+    var imgs=[];
+    for(var i=0;i<pdfFiles.length;i++)imgs.push(await loadImg(pdfFiles[i]));
+    var w=window.open('','','width=800,height=600');
+    w.document.write('<!DOCTYPE html><html><head><title>PDF</title><style>@page{size:A4;margin:10mm}body{margin:0}img{max-width:100%;max-height:90vh;display:block;margin:5mm auto;page-break-after:always}</style></head><body>');
+    imgs.forEach(function(img){w.document.write('<img src="'+img.src+'">')});
+    w.document.write('</body></html>');w.document.close();w.print();
+    return;
+  }
+  try{
+    var jsPDF=window.jspdf.jsPDF;
+    var doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    var pageW=210,pageH=297,margin=10;
+    var maxW=pageW-margin*2,maxH=pageH-margin*2;
+    for(var i=0;i<pdfFiles.length;i++){
+      var img=await loadImg(pdfFiles[i]);
+      var ratio=Math.min(maxW/img.width,maxH/img.height);
+      var w=img.width*ratio,h=img.height*ratio;
+      var x=(pageW-w)/2,y=(pageH-h)/2;
+      if(i>0)doc.addPage();
+      var canvas=document.createElement('canvas');canvas.width=img.width;canvas.height=img.height;
+      canvas.getContext('2d').drawImage(img,0,0);
+      var dataUrl=canvas.toDataURL('image/jpeg',0.92);
+      doc.addImage(dataUrl,'JPEG',x,y,w,h);
+    }
+    doc.save(pdfFiles.length===1?pdfFiles[0].name.replace(/\.[^.]+$/,'.pdf'):'images.pdf');
+  }catch(e){alert('PDF 生成失败: '+e.message)}
 }
 
 // ===== Markdown =====
@@ -1098,7 +1147,7 @@ function wordConv(fmt,fileId,infoId){
         w.document.close();setTimeout(function(){w.print()},500);
       }
       document.getElementById(infoId).innerHTML='<span class="ok">✓</span> 转换完成！';
-    }catch(e){document.getElementById(infoId).innerHTML='<span class="err">失败: '+e.message+'</span>'}
+    }catch(e){document.getElementById(infoId).innerHTML='<span class="err">失败: '+esc(e.message)+'</span>'}
   };
   reader.readAsArrayBuffer(file);
 }
@@ -1135,7 +1184,7 @@ function xlsConv(fmt,fileId,infoId){
       else if(fmt==='html'){var html=XLSX.utils.sheet_to_html(sheet);dlBlob('<!DOCTYPE html><html><head><meta charset="utf-8"><style>table{border-collapse:collapse;width:100%}td,th{border:1px solid #ddd;padding:6px}</style></head><body>'+html+'</body></html>',name+'.html','text/html')}
       else if(fmt==='txt'){var txt=XLSX.utils.sheet_to_csv(sheet,{FS:'\t'});dlBlob(txt,name+'.txt','text/plain')}
       document.getElementById(infoId).innerHTML='<span class="ok">✓</span> 转换完成！已下载';
-    }catch(e){document.getElementById(infoId).innerHTML='<span class="err">失败: '+e.message+'</span>'}
+    }catch(e){document.getElementById(infoId).innerHTML='<span class="err">失败: '+esc(e.message)+'</span>'}
   };
   reader.readAsArrayBuffer(fi.files[0]);
 }
@@ -1213,26 +1262,40 @@ function jsonToCsv2(inId,outId){
 }
 
 // Word conversion dz
-setupDz('w2h-dz','w2h-f',function(f){document.getElementById('w2h-info').innerHTML='<span class="ok">✓</span> '+f[0].name});
-setupDz('w2t-dz','w2t-f',function(f){document.getElementById('w2t-info').innerHTML='<span class="ok">✓</span> '+f[0].name});
-setupDz('w2m-dz','w2m-f',function(f){document.getElementById('w2m-info').innerHTML='<span class="ok">✓</span> '+f[0].name});
-setupDz('w2p-dz','w2p-f',function(f){document.getElementById('w2p-info').innerHTML='<span class="ok">✓</span> '+f[0].name});
+setupDz('w2h-dz','w2h-f',function(f){document.getElementById('w2h-info').innerHTML='<span class="ok">✓</span> '+esc(f[0].name)});
+setupDz('w2t-dz','w2t-f',function(f){document.getElementById('w2t-info').innerHTML='<span class="ok">✓</span> '+esc(f[0].name)});
+setupDz('w2m-dz','w2m-f',function(f){document.getElementById('w2m-info').innerHTML='<span class="ok">✓</span> '+esc(f[0].name)});
+setupDz('w2p-dz','w2p-f',function(f){document.getElementById('w2p-info').innerHTML='<span class="ok">✓</span> '+esc(f[0].name)});
 // Excel conversion dz
-setupDz('x2c-dz','x2c-f',function(f){document.getElementById('x2c-info').innerHTML='<span class="ok">✓</span> '+f[0].name});
-setupDz('x2j-dz','x2j-f',function(f){document.getElementById('x2j-info').innerHTML='<span class="ok">✓</span> '+f[0].name});
-setupDz('x2h-dz','x2h-f',function(f){document.getElementById('x2h-info').innerHTML='<span class="ok">✓</span> '+f[0].name});
-setupDz('x2t-dz','x2t-f',function(f){document.getElementById('x2t-info').innerHTML='<span class="ok">✓</span> '+f[0].name});
+setupDz('x2c-dz','x2c-f',function(f){document.getElementById('x2c-info').innerHTML='<span class="ok">✓</span> '+esc(f[0].name)});
+setupDz('x2j-dz','x2j-f',function(f){document.getElementById('x2j-info').innerHTML='<span class="ok">✓</span> '+esc(f[0].name)});
+setupDz('x2h-dz','x2h-f',function(f){document.getElementById('x2h-info').innerHTML='<span class="ok">✓</span> '+esc(f[0].name)});
+setupDz('x2t-dz','x2t-f',function(f){document.getElementById('x2t-info').innerHTML='<span class="ok">✓</span> '+esc(f[0].name)});
 
 // ===== Text to PDF =====
 function txt2pdf(){
   var text=document.getElementById('t2p-in').value;
   if(!text.trim()){alert('请输入文字');return}
-  var size=document.getElementById('t2p-size').value;
+  var size=parseInt(document.getElementById('t2p-size').value);
   var orient=document.getElementById('t2p-orient').value;
-  var w=window.open('','','width=800,height=600');
-  w.document.write('<!DOCTYPE html><html><head><title>PDF</title><style>@page{size:A4;margin:20mm;'+(orient==='landscape'?'size:A4 landscape':'')+'}body{font-family:system-ui,sans-serif;font-size:'+size+'px;line-height:1.8;white-space:pre-wrap;word-wrap:break-word}@media print{body{margin:0}}</style></head><body>'+text.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</body></html>');
-  w.document.close();
-  setTimeout(function(){w.print()},300);
+  if(typeof window.jspdf==='undefined'){
+    // Fallback
+    var w=window.open('','','width=800,height=600');
+    w.document.write('<!DOCTYPE html><html><head><title>PDF</title><style>@page{size:A4'+orient==='landscape'?' landscape':''+';margin:20mm}body{font-size:'+size+'px;line-height:1.8;white-space:pre-wrap}</style></head><body>'+text.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</body></html>');
+    w.document.close();setTimeout(function(){w.print()},300);return;
+  }
+  try{
+    var jsPDF=window.jspdf.jsPDF;
+    var doc=new jsPDF({orientation:orient,unit:'mm',format:'a4'});
+    var margin=20;
+    var fontSizePt=Math.round(size*0.75);
+    doc.setFontSize(fontSizePt);
+    var pageW=orient==='landscape'?297:210;
+    var maxW=pageW-margin*2;
+    var lines=doc.splitTextToSize(text,maxW/(fontSizePt*0.3528));
+    doc.text(lines,margin,margin+fontSizePt*0.3528);
+    doc.save('text.pdf');
+  }catch(e){alert('PDF 生成失败: '+e.message)}
 }
 
 // ===== Image to Base64 =====
@@ -1361,8 +1424,10 @@ function cmpGo(){
         var url=URL.createObjectURL(blob);
         var a=document.createElement('a');a.href=url;a.download='compressed_'+f.name.replace(/\.[^.]+$/,'.'+ext);
         var div=document.createElement('div');div.style.marginTop='6px';
-        div.innerHTML='<span class="ok">✓</span> '+f.name+': '+(f.size/1024).toFixed(0)+'KB → '+(blob.size/1024).toFixed(0)+'KB <span class="ok">(-'+saving+'%)</span> <a href="'+url+'" download="'+a.download+'">下载</a>';
+        div.innerHTML='<span class="ok">✓</span> '+esc(f.name)+': '+(f.size/1024).toFixed(0)+'KB → '+(blob.size/1024).toFixed(0)+'KB <span class="ok">(-'+saving+'%)</span> <a href="'+url+'" download="'+esc(a.download)+'">下载</a>';
         res.appendChild(div);a.click();
+        URL.revokeObjectURL(img.src);
+        setTimeout(function(){URL.revokeObjectURL(url)},3000);
       },fmt,q);
     };img.src=URL.createObjectURL(f);
   });
@@ -1455,7 +1520,7 @@ function qrGo(){
     var a=document.createElement('a');a.href=canvas.toDataURL();a.download='qrcode.png';
     a.innerHTML='<br><button class="btn bo bs" style="margin-top:8px">💾 下载</button>';
     el.appendChild(a);
-  }catch(e){document.getElementById('qr-res').innerHTML='<span class="err">生成失败: '+e.message+'</span>'}
+  }catch(e){document.getElementById('qr-res').innerHTML='<span class="err">生成失败: '+esc(e.message)+'</span>'}
 }
 
 // 删除了有 bug 的自实现 qrEncode 函数，改用 qrcode-generator 库
@@ -1553,7 +1618,7 @@ function tsGo2(){
 var zipFiles=[];
 setupDz('zip-dz','zip-f',function(f){
   zipFiles=Array.from(f);
-  document.getElementById('zip-lst').innerHTML=zipFiles.map(function(f){return'📄 '+f.name+' ('+(f.size/1024).toFixed(1)+'KB)'}).join('<br>');
+  document.getElementById('zip-lst').innerHTML=zipFiles.map(function(f){return'📄 '+esc(f.name)+' ('+(f.size/1024).toFixed(1)+'KB)'}).join('<br>');
 });
 async function zipGo(){
   if(!zipFiles.length){alert('请先选文件');return}
@@ -1575,23 +1640,33 @@ async function zipGo(){
 // ===== FFmpeg 音视频处理 =====
 var ffmpegInstance=null;
 var ffmpegLoaded=false;
+function loadScript(url){
+  return new Promise(function(resolve,reject){
+    var s=document.createElement('script');s.src=url;s.onload=resolve;s.onerror=reject;document.head.appendChild(s);
+  });
+}
 async function initFFmpeg(){
   if(ffmpegLoaded)return true;
   try{
+    var progressEl=document.querySelectorAll('.ff-st');
+    var showProgress=function(msg){progressEl.forEach(function(el){el.textContent=msg})};
+    // 动态加载 FFmpeg 库
+    if(!window.FFmpeg||!window.FFmpegUtil){
+      showProgress('正在加载音视频引擎...');
+      await loadScript('https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js');
+      await loadScript('https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/util.js');
+    }
     var FFmpeg=window.FFmpeg;
     var Util=window.FFmpegUtil;
-    if(!FFmpeg||!Util){alert('⏳ 音视频引擎加载中，请稍后重试');return false}
+    if(!FFmpeg||!Util){alert('引擎加载失败，请检查网络');return false}
     ffmpegInstance=new FFmpeg.FFmpeg();
     ffmpegInstance.on('log',function(e){console.log(e)});
     ffmpegInstance.on('progress',function(e){
       var pct=Math.round((e.progress||0)*100);
-      document.querySelectorAll('.ff-st').forEach(function(el){el.textContent='处理中... '+pct+'%'})
+      progressEl.forEach(function(el){el.textContent='处理中... '+pct+'%'})
     });
     var baseURL='https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
-    // 显示下载进度
-    var progressEl=document.querySelectorAll('.ff-st');
-    var showProgress=function(msg){progressEl.forEach(function(el){el.textContent=msg})};
-    showProgress('正在下载引擎 (约 20MB)...');
+    showProgress('正在下载引擎核心 (约 20MB)...');
     var coreURL=await Util.toBlobURL(baseURL+'/ffmpeg-core.js','text/javascript');
     showProgress('正在下载 WASM 核心...');
     var wasmURL=await Util.toBlobURL(baseURL+'/ffmpeg-core.wasm','application/wasm');
@@ -1608,7 +1683,7 @@ function setFFBtn(id,disabled,txt){var el=document.getElementById(id);if(el){el.
 var v2aFile=null;
 setupDz('v2a-dz','v2a-f',function(f){
   v2aFile=f[0];
-  document.getElementById('v2a-info').innerHTML='<span class="ok">✓</span> '+v2aFile.name+' ('+(v2aFile.size/1024/1024).toFixed(1)+'MB)';
+  document.getElementById('v2a-info').innerHTML='<span class="ok">✓</span> '+esc(v2aFile.name)+' ('+(v2aFile.size/1024/1024).toFixed(1)+'MB)';
 });
 async function v2aGo(){
   if(!v2aFile){alert('请先选择视频');return}
@@ -1626,7 +1701,7 @@ async function v2aGo(){
     var blob=new Blob([out.buffer],{type:'audio/'+extMap[fmt]});
     var url=URL.createObjectURL(blob);
     var el=document.getElementById('v2a-res');
-    el.innerHTML='<span class="ok">✓</span> 提取完成！<audio controls src="'+url+'" style="display:block;margin-top:6px;width:100%"></audio><a href="'+url+'" download="'+v2aFile.name.replace(/\.[^.]+$/,'.'+extMap[fmt])+'"><button class="btn bo bs" style="margin-top:6px">💾 下载音频</button></a>';
+    el.innerHTML='<span class="ok">✓</span> 提取完成！<audio controls src="'+url+'" style="display:block;margin-top:6px;width:100%"></audio><a href="'+url+'" download="'+esc(v2aFile.name).replace(/\.[^.]+$/,'.'+extMap[fmt])+'"><button class="btn bo bs" style="margin-top:6px">💾 下载音频</button></a>';
     await ffmpegInstance.deleteFile('input');await ffmpegInstance.deleteFile('output.'+extMap[fmt]);
   }catch(e){setFFStatus('v2a-st','错误: '+e.message)}
   setFFBtn('v2a-btn',false,'🎵 提取音频');
@@ -1636,7 +1711,7 @@ async function v2aGo(){
 var acvFile=null;
 setupDz('acv-dz','acv-f',function(f){
   acvFile=f[0];
-  document.getElementById('acv-info').innerHTML='<span class="ok">✓</span> '+acvFile.name+' ('+(acvFile.size/1024/1024).toFixed(1)+'MB)';
+  document.getElementById('acv-info').innerHTML='<span class="ok">✓</span> '+esc(acvFile.name)+' ('+(acvFile.size/1024/1024).toFixed(1)+'MB)';
 });
 async function acvGo(){
   if(!acvFile){alert('请先选择音频');return}
@@ -1654,7 +1729,7 @@ async function acvGo(){
     var blob=new Blob([out.buffer],{type:'audio/'+extMap[fmt]});
     var url=URL.createObjectURL(blob);
     var el=document.getElementById('acv-res');
-    el.innerHTML='<span class="ok">✓</span> 转换完成！<audio controls src="'+url+'" style="display:block;margin-top:6px;width:100%"></audio><a href="'+url+'" download="'+acvFile.name.replace(/\.[^.]+$/,'.'+extMap[fmt])+'"><button class="btn bo bs" style="margin-top:6px">💾 下载</button></a>';
+    el.innerHTML='<span class="ok">✓</span> 转换完成！<audio controls src="'+url+'" style="display:block;margin-top:6px;width:100%"></audio><a href="'+url+'" download="'+esc(acvFile.name).replace(/\.[^.]+$/,'.'+extMap[fmt])+'"><button class="btn bo bs" style="margin-top:6px">💾 下载</button></a>';
     await ffmpegInstance.deleteFile('input');await ffmpegInstance.deleteFile('output.'+extMap[fmt]);
   }catch(e){setFFStatus('acv-st','错误: '+e.message)}
   setFFBtn('acv-btn',false,'🔄 转换');
@@ -1664,7 +1739,7 @@ async function acvGo(){
 var vcvFile=null;
 setupDz('vcv-dz','vcv-f',function(f){
   vcvFile=f[0];
-  document.getElementById('vcv-info').innerHTML='<span class="ok">✓</span> '+vcvFile.name+' ('+(vcvFile.size/1024/1024).toFixed(1)+'MB)';
+  document.getElementById('vcv-info').innerHTML='<span class="ok">✓</span> '+esc(vcvFile.name)+' ('+(vcvFile.size/1024/1024).toFixed(1)+'MB)';
 });
 async function vcvGo(){
   if(!vcvFile){alert('请先选择视频');return}
@@ -1687,7 +1762,7 @@ async function vcvGo(){
     var blob=new Blob([out.buffer],{type:mime});
     var url=URL.createObjectURL(blob);
     var el=document.getElementById('vcv-res');
-    el.innerHTML='<span class="ok">✓</span> 转换完成！<video controls src="'+url+'" style="max-width:100%;border-radius:10px;margin-top:6px"></video><a href="'+url+'" download="'+vcvFile.name.replace(/\.[^.]+$/,'.'+fmt)+'"><button class="btn bo bs" style="margin-top:6px">💾 下载视频</button></a>';
+    el.innerHTML='<span class="ok">✓</span> 转换完成！<video controls src="'+url+'" style="max-width:100%;border-radius:10px;margin-top:6px"></video><a href="'+url+'" download="'+esc(vcvFile.name).replace(/\.[^.]+$/,'.'+fmt)+'"><button class="btn bo bs" style="margin-top:6px">💾 下载视频</button></a>';
     await ffmpegInstance.deleteFile('input');await ffmpegInstance.deleteFile('output.'+fmt);
   }catch(e){setFFStatus('vcv-st','错误: '+e.message)}
   setFFBtn('vcv-btn',false,'🎬 转换');
@@ -1697,7 +1772,7 @@ async function vcvGo(){
 var vcutFile=null;
 setupDz('vcut-dz','vcut-f',function(f){
   vcutFile=f[0];
-  document.getElementById('vcut-info').innerHTML='<span class="ok">✓</span> '+vcutFile.name+' ('+(vcutFile.size/1024/1024).toFixed(1)+'MB)';
+  document.getElementById('vcut-info').innerHTML='<span class="ok">✓</span> '+esc(vcutFile.name)+' ('+(vcutFile.size/1024/1024).toFixed(1)+'MB)';
 });
 async function vcutGo(){
   if(!vcutFile){alert('请先选择视频');return}
@@ -1721,7 +1796,7 @@ async function vcutGo(){
     var blob=new Blob([out.buffer],{type:'video/'+fmt});
     var url=URL.createObjectURL(blob);
     var el=document.getElementById('vcut-res');
-    el.innerHTML='<span class="ok">✓</span> 剪切完成！<video controls src="'+url+'" style="max-width:100%;border-radius:10px;margin-top:6px"></video><a href="'+url+'" download="cut_'+vcutFile.name.replace(/\.[^.]+$/,'.'+fmt)+'"><button class="btn bo bs" style="margin-top:6px">💾 下载</button></a>';
+    el.innerHTML='<span class="ok">✓</span> 剪切完成！<video controls src="'+url+'" style="max-width:100%;border-radius:10px;margin-top:6px"></video><a href="'+url+'" download="cut_'+esc(vcutFile.name).replace(/\.[^.]+$/,'.'+fmt)+'"><button class="btn bo bs" style="margin-top:6px">💾 下载</button></a>';
     await ffmpegInstance.deleteFile('input');await ffmpegInstance.deleteFile('output.'+fmt);
   }catch(e){setFFStatus('vcut-st','错误: '+e.message)}
   setFFBtn('vcut-btn',false,'✂️ 剪切');
@@ -1731,7 +1806,7 @@ async function vcutGo(){
 var vframeFile=null;
 setupDz('vframe-dz','vframe-f',function(f){
   vframeFile=f[0];
-  document.getElementById('vframe-info').innerHTML='<span class="ok">✓</span> '+vframeFile.name+' ('+(vframeFile.size/1024/1024).toFixed(1)+'MB)';
+  document.getElementById('vframe-info').innerHTML='<span class="ok">✓</span> '+esc(vframeFile.name)+' ('+(vframeFile.size/1024/1024).toFixed(1)+'MB)';
 });
 async function vframeGo(){
   if(!vframeFile){alert('请先选择视频');return}
