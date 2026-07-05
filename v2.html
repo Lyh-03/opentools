@@ -137,6 +137,13 @@ a{color:var(--accent2);text-decoration:none}
     <div class="ni" data-t="ts"><span class="ic">⏱️</span>时间戳转换</div>
   </div>
   <div class="nav-g">
+    <div class="nav-l">系统工具</div>
+    <div class="ni" data-t="diskclean"><span class="ic">🧹</span>磁盘清理</div>
+    <div class="ni" data-t="storesense"><span class="ic">📦</span>存储感知</div>
+    <div class="ni" data-t="sysclean"><span class="ic">🗂️</span>系统文件清理</div>
+    <div class="ni" data-t="cmdclean"><span class="ic">⌨️</span>CMD 一键清理</div>
+  </div>
+  <div class="nav-g">
     <div class="nav-l">在线工具</div>
     <a class="ni" href="https://cobalt.tools" target="_blank" style="text-decoration:none;color:var(--dim)"><span class="ic">📥</span>无水印视频下载</a>
     <a class="ni" href="https://www.remove.bg/zh" target="_blank" style="text-decoration:none;color:var(--dim)"><span class="ic">✂️</span>AI 抠图去背景</a>
@@ -646,6 +653,84 @@ console.log('Hi');
       </div>
     </div>
 
+    <!-- 磁盘清理 -->
+    <div class="tp" id="p-diskclean">
+      <div class="sec">
+        <div class="st">🧹 磁盘清理</div>
+        <div style="line-height:1.8;font-size:.9rem">
+          <p>Windows 自带磁盘清理工具，可清除临时文件、回收站、缩略图缓存等。</p>
+          <div style="margin:14px 0;padding:14px;background:rgba(108,99,255,.08);border-radius:10px;border-left:3px solid var(--accent)">
+            <div style="font-weight:600;margin-bottom:8px">📋 操作步骤：</div>
+            <div>1. 按 <code style="background:var(--tag-bg);padding:2px 6px;border-radius:4px">Win + R</code> 打开运行窗口</div>
+            <div>2. 输入 <code style="background:var(--tag-bg);padding:2px 6px;border-radius:4px">cleanmgr</code> 回车</div>
+            <div>3. 选择 C: 盘 → 确定</div>
+            <div>4. 勾选要清理的项目 → 点「清理系统文件」可清理更多</div>
+          </div>
+          <p style="color:var(--dim)">💡 通常能清出 1-5GB 空间</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 存储感知 -->
+    <div class="tp" id="p-storesense">
+      <div class="sec">
+        <div class="st">📦 存储感知（自动清理）</div>
+        <div style="line-height:1.8;font-size:.9rem">
+          <p>Windows 10/11 自带功能，开启后自动定期清理临时文件和回收站。</p>
+          <div style="margin:14px 0;padding:14px;background:rgba(108,99,255,.08);border-radius:10px;border-left:3px solid var(--accent)">
+            <div style="font-weight:600;margin-bottom:8px">📋 操作步骤：</div>
+            <div>1. 打开 <b>设置</b>（Win + I）</div>
+            <div>2. 点 <b>系统</b> → <b>存储</b></div>
+            <div>3. 开启 <b>存储感知</b></div>
+            <div>4. 点击可设置自动清理频率（每天/每周/每月）</div>
+          </div>
+          <p style="color:var(--dim)">💡 建议开启，自动保持磁盘空间</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 系统文件清理 -->
+    <div class="tp" id="p-sysclean">
+      <div class="sec">
+        <div class="st">🗂️ 系统文件清理（深层清理）</div>
+        <div style="line-height:1.8;font-size:.9rem">
+          <p>清理 Windows 更新缓存、旧版本备份等系统文件，通常能清出几个G。</p>
+          <div style="margin:14px 0;padding:14px;background:rgba(108,99,255,.08);border-radius:10px;border-left:3px solid var(--accent)">
+            <div style="font-weight:600;margin-bottom:8px">📋 操作步骤：</div>
+            <div>1. 按 <code style="background:var(--tag-bg);padding:2px 6px;border-radius:4px">Win + R</code> → 输入 <code style="background:var(--tag-bg);padding:2px 6px;border-radius:4px">cleanmgr</code> 回车</div>
+            <div>2. 选择 C: 盘 → 确定</div>
+            <div>3. 点左下角 <b>「清理系统文件」</b> 按钮</div>
+            <div>4. 勾选「Windows 更新清理」「以前的 Windows 安装」等</div>
+            <div>5. 点确定清理</div>
+          </div>
+          <p style="color:var(--orange)">⚠️ 清理「以前的 Windows 安装」后无法回退系统更新</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- CMD 一键清理 -->
+    <div class="tp" id="p-cmdclean">
+      <div class="sec">
+        <div class="st">⌨️ CMD 一键清理</div>
+        <div style="line-height:1.8;font-size:.9rem">
+          <p>用命令行快速清理临时文件，复制以下命令在管理员 CMD 中运行：</p>
+          <div style="margin:14px 0;padding:14px;background:rgba(15,15,19,0.5);border-radius:10px;font-family:monospace;font-size:.82rem;border:1px solid rgba(42,42,61,0.3)">
+            <div>@echo off</div>
+            <div>echo 正在清理临时文件...</div>
+            <div>del /q/f/s %TEMP%\*</div>
+            <div>del /q/f/s C:\Windows\Temp\*</div>
+            <div>del /q/f/s C:\Windows\Prefetch\*</div>
+            <div>echo 清理完成！</div>
+            <div>pause</div>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <button class="btn bp bs" onclick="navigator.clipboard.writeText('@echo off\necho 正在清理临时文件...\ndel /q/f/s %TEMP%\\*\ndel /q/f/s C:\\Windows\\Temp\\*\ndel /q/f/s C:\\Windows\\Prefetch\\*\necho 清理完成！\npause');alert('已复制！粘贴到记事本保存为 .bat 文件，右键以管理员身份运行')">📋 复制命令</button>
+          </div>
+          <p style="color:var(--dim);margin-top:10px">💡 保存为 .bat 文件 → 右键 → 以管理员身份运行</p>
+        </div>
+      </div>
+    </div>
+
     <!-- ZIP -->
     <div class="tp" id="p-zip">
       <div class="sec">
@@ -768,8 +853,8 @@ console.log('Hi');
 <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/util.js"></script>
 <script>
 // ===== Navigation =====
-var titles={imgcv:'图片格式转换',pdf:'图片转 PDF',word2html:'Word 转 HTML',word2txt:'Word 转文本',word2md:'Word 转 Markdown',word2pdf:'Word 转 PDF',txt2word:'文本 转 Word',html2word:'HTML 转 Word',xls2csv:'Excel 转 CSV',xls2json:'Excel 转 JSON',xls2html:'Excel 转 HTML',xls2txt:'Excel 转文本',csv2xls:'CSV 转 Excel',json2xls:'JSON 转 Excel',md:'Markdown 编辑器',csv2json:'CSV 转 JSON',json2csv:'JSON 转 CSV',txt2pdf:'文本转 PDF',img2base:'图片转 Base64',img2ico:'图片转 ICO',imgmerge:'图片拼接',txt2img:'文字转图片',v2a:'视频提取音频',acv:'音频格式转换',vcv:'视频格式转换',vcut:'视频剪切',vframe:'视频提取帧图片',comp:'图片压缩',resize:'图片缩放',wm:'图片加水印',cp:'颜色拾取',ocr:'OCR 文字识别',qr:'二维码生成',b64:'Base64 编解码',hash:'哈希计算',jf:'JSON 格式化',re:'正则测试',diff:'文本对比',url:'URL 编解码',ts:'时间戳转换',zip:'ZIP 压缩'};
-var descs={imgcv:'PNG/JPG/WebP/BMP 互转',pdf:'多张图片合并为 PDF',word2html:'将 .docx 转为 HTML 网页',word2txt:'将 .docx 转为纯文本',word2md:'将 .docx 转为 Markdown',word2pdf:'将 .docx 转为 PDF 打印',txt2word:'将纯文本转为 .docx',html2word:'将 HTML 转为 .docx',xls2csv:'将 Excel 转为 CSV',xls2json:'将 Excel 转为 JSON',xls2html:'将 Excel 转为 HTML 表格',xls2txt:'将 Excel 转为纯文本',csv2xls:'将 CSV 转为 .xlsx',json2xls:'将 JSON 转为 .xlsx',md:'实时预览，导出 HTML',csv2json:'将 CSV 转为 JSON',json2csv:'将 JSON 转为 CSV',txt2pdf:'输入文字生成 PDF',img2base:'图片转为 Base64',img2ico:'生成网站 favicon',imgmerge:'多张图片拼接成一张',txt2img:'把文字做成图片',v2a:'从视频中提取音频',acv:'音频格式互转',vcv:'视频格式互转',vcut:'截取视频片段',vframe:'提取帧图片',comp:'压缩图片体积',resize:'按尺寸缩放图片',wm:'添加文字水印',cp:'拾取颜色 HEX/RGB/HSL',ocr:'本地识别图片文字',qr:'生成二维码',b64:'文本与 Base64 互转',hash:'SHA-1/SHA-256',jf:'格式化或压缩 JSON',re:'正则在线测试',diff:'高亮文本差异',url:'URL 编码解码',ts:'时间戳转换',zip:'压缩文件为 ZIP'};
+var titles={imgcv:'图片格式转换',pdf:'图片转 PDF',word2html:'Word 转 HTML',word2txt:'Word 转文本',word2md:'Word 转 Markdown',word2pdf:'Word 转 PDF',txt2word:'文本 转 Word',html2word:'HTML 转 Word',xls2csv:'Excel 转 CSV',xls2json:'Excel 转 JSON',xls2html:'Excel 转 HTML',xls2txt:'Excel 转文本',csv2xls:'CSV 转 Excel',json2xls:'JSON 转 Excel',md:'Markdown 编辑器',csv2json:'CSV 转 JSON',json2csv:'JSON 转 CSV',txt2pdf:'文本转 PDF',img2base:'图片转 Base64',img2ico:'图片转 ICO',imgmerge:'图片拼接',txt2img:'文字转图片',v2a:'视频提取音频',acv:'音频格式转换',vcv:'视频格式转换',vcut:'视频剪切',vframe:'视频提取帧图片',comp:'图片压缩',resize:'图片缩放',wm:'图片加水印',cp:'颜色拾取',ocr:'OCR 文字识别',qr:'二维码生成',b64:'Base64 编解码',hash:'哈希计算',jf:'JSON 格式化',re:'正则测试',diff:'文本对比',url:'URL 编解码',ts:'时间戳转换',zip:'ZIP 压缩',diskclean:'磁盘清理',storesense:'存储感知',sysclean:'系统文件清理',cmdclean:'CMD 一键清理'};
+var descs={imgcv:'PNG/JPG/WebP/BMP 互转',pdf:'多张图片合并为 PDF',word2html:'将 .docx 转为 HTML 网页',word2txt:'将 .docx 转为纯文本',word2md:'将 .docx 转为 Markdown',word2pdf:'将 .docx 转为 PDF 打印',txt2word:'将纯文本转为 .docx',html2word:'将 HTML 转为 .docx',xls2csv:'将 Excel 转为 CSV',xls2json:'将 Excel 转为 JSON',xls2html:'将 Excel 转为 HTML 表格',xls2txt:'将 Excel 转为纯文本',csv2xls:'将 CSV 转为 .xlsx',json2xls:'将 JSON 转为 .xlsx',md:'实时预览，导出 HTML',csv2json:'将 CSV 转为 JSON',json2csv:'将 JSON 转为 CSV',txt2pdf:'输入文字生成 PDF',img2base:'图片转为 Base64',img2ico:'生成网站 favicon',imgmerge:'多张图片拼接成一张',txt2img:'把文字做成图片',v2a:'从视频中提取音频',acv:'音频格式互转',vcv:'视频格式互转',vcut:'截取视频片段',vframe:'提取帧图片',comp:'压缩图片体积',resize:'按尺寸缩放图片',wm:'添加文字水印',cp:'拾取颜色 HEX/RGB/HSL',ocr:'本地识别图片文字',qr:'生成二维码',b64:'文本与 Base64 互转',hash:'SHA-1/SHA-256',jf:'格式化或压缩 JSON',re:'正则在线测试',diff:'高亮文本差异',url:'URL 编码解码',ts:'时间戳转换',zip:'压缩文件为 ZIP',diskclean:'清理临时文件和回收站',storesense:'开启自动定期清理',sysclean:'清理更新缓存和旧版本',cmdclean:'命令行快速清理临时文件'};
 document.querySelectorAll('.ni').forEach(function(el){
   el.onclick=function(){
     document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('on')});
