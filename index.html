@@ -844,7 +844,7 @@ function zipGo(){
 }
 
 // ===== Service Worker =====
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){}}
+if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){x.unregister()})});caches.keys().then(function(k){k.forEach(function(c){caches.delete(c)})});setTimeout(function(){navigator.serviceWorker.register('sw.js?v=3')},1000)}
 </script>
 </body>
 </html>
