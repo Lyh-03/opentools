@@ -12,6 +12,8 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>">
 <title>🛠️ 体院办公 - 本地在线工具箱</title>
 <meta name="description" content="体院办公工具箱 - 40+款本地运行的文件转换、图片处理、音视频工具，数据无留痕。">
+<meta name="keywords" content="在线工具箱,文件转换,图片压缩,PDF转换,Word转HTML,视频转音频,二维码生成,OCR识别,本地工具,隐私安全">
+<meta name="author" content="刘奕赫">
 <meta property="og:type" content="website">
 <meta property="og:title" content="体院办公 - 本地在线工具箱">
 <meta property="og:description" content="40+款本地运行的文件转换、图片处理、音视频工具，数据无留痕。">
@@ -1088,7 +1090,11 @@ function dlBlob(content,name,type){
 function setupDz(dzId,fileId,cb){
   var dz=document.getElementById(dzId),fi=document.getElementById(fileId);
   var accept=fi.accept||'';
+  if(!dz.getAttribute('role'))dz.setAttribute('role','button');
+  if(!dz.getAttribute('tabindex'))dz.setAttribute('tabindex','0');
+  if(!dz.getAttribute('aria-label'))dz.setAttribute('aria-label','点击选择或拖放文件');
   dz.onclick=function(){fi.click()};
+  dz.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();fi.click()}};
   dz.ondragover=function(e){e.preventDefault();dz.classList.add('drag')};
   dz.ondragleave=function(){dz.classList.remove('drag')};
   dz.ondrop=function(e){
@@ -2162,6 +2168,24 @@ async function zipGo(){
   }catch(e){alert('压缩失败: '+e.message)}
 }
 
+// ===== 功能检测 =====
+var isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+var isIOs=/iPhone|iPad|iPod/i.test(navigator.userAgent);
+var supportsSharedArrayBuffer=typeof SharedArrayBuffer!=='undefined';
+function checkVideoSupport(){
+  if(isIOs&&!supportsSharedArrayBuffer){
+    showToast('⚠️ iOS 设备视频处理功能受限，建议使用桌面端浏览器',4000,'warn');
+    return false;
+  }
+  return true;
+}
+// Add warnings to video tool buttons on load
+if(isIOs){
+  document.querySelectorAll('[data-t="v2a"],[data-t="acv"],[data-t="vcv"],[data-t="vcut"],[data-t="vframe"]').forEach(function(el){
+    el.title='iOS 设备可能不支持此功能，建议使用桌面端';
+  });
+}
+
 // ===== FFmpeg 音视频处理 =====
 var ffmpegInstance=null;
 var ffmpegLoaded=false;
@@ -2212,6 +2236,7 @@ setupDz('v2a-dz','v2a-f',function(f){
 });
 async function v2aGo(){
   if(!v2aFile){alert('请先选择视频');return}
+  if(!checkVideoSupport())return;
   setFFBtn('v2a-btn',true,'⏳ 加载引擎...');setFFStatus('v2a-st','首次使用需下载约 20MB 引擎，请耐心等待...');
   if(!(await initFFmpeg())){setFFBtn('v2a-btn',false,'🎵 提取音频');setFFStatus('v2a-st','引擎加载失败');return}
   var fmt=document.getElementById('v2a-fmt').value;
@@ -2715,7 +2740,7 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').then(
 </script>
 
 <div class="footer-bar" style="position:fixed;bottom:0;left:0;right:0;text-align:center;padding:8px 20px;font-size:0.72rem;color:rgba(136,136,160,0.5);line-height:1.6;background:rgba(15,15,19,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:50;border-top:1px solid rgba(42,42,61,0.2)">
-  <span>📌 所有工具均在浏览器本地运行，不向服务器发送任何数据 | 网页开发：刘奕赫 齐鲁师范体育学院 学号：2024146088 | <a href="javascript:void(0)" onclick="showPrivacy()" style="color:rgba(136,136,160,0.7);text-decoration:underline" aria-label="查看隐私声明">隐私声明</a></span>
+  <span>📌 所有文件处理均在本地浏览器完成，不会上传到任何服务器 | 网页开发：刘奕赫 齐鲁师范体育学院 | <a href="javascript:void(0)" onclick="showPrivacy()" style="color:rgba(136,136,160,0.7);text-decoration:underline" aria-label="查看隐私声明">隐私声明</a> | <span style="color:var(--accent2)">v2.1.0</span></span>
 </div>
 <div class="page-loader" id="pageLoader">
   <div class="spinner"></div>
