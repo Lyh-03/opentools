@@ -545,7 +545,7 @@ console.log('Hi');
         <input type="file" id="mg-f" accept="image/*" multiple hidden>
         <div class="img-row" id="mg-pv"></div>
         <div class="row" style="margin-top:10px">
-          <div><label>排列方式</label><select id="mg-dir"><option value="v">纵向排列</option><option value="h">横向排列</option></select></div>
+          <div><label>排列方式</label><select id="mg-dir"><option value="auto">🤖 智能排列</option><option value="v">纵向排列</option><option value="h">横向排列</option></select></div>
           <div><label>间距 (px)</label><input type="number" id="mg-gap" value="10" min="0" max="100"></div>
           <div><label>背景色</label><input type="text" id="mg-bg" value="#ffffff"></div>
         </div>
@@ -639,6 +639,14 @@ console.log('Hi');
             <div style="color:var(--dim);font-size:.82rem" id="cp-hsl">hsl(243, 100%, 69%)</div>
           </div>
         </div>
+        <!-- WCAG 对比度检查 -->
+        <div style="margin-top:12px;padding:10px;border-radius:10px;background:rgba(15,15,19,0.15);font-size:.82rem" id="cp-wcag"></div>
+        <!-- 颜色变体 -->
+        <div style="margin-top:12px" id="cp-vars"></div>
+        <!-- CSS 代码 -->
+        <div style="margin-top:12px;padding:10px;background:rgba(15,15,19,0.2);border-radius:10px;font-family:monospace;font-size:.78rem;cursor:pointer" id="cp-css" onclick="cpCpy('css')" title="点击复制"></div>
+        <!-- 最近使用颜色 -->
+        <div style="margin-top:12px" id="cp-history"></div>
         <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn bo bs" onclick="cpCpy('hex')">复制 HEX</button>
           <button class="btn bo bs" onclick="cpCpy('rgb')">复制 RGB</button>
@@ -669,7 +677,16 @@ console.log('Hi');
           <div style="flex:2"><label>内容</label><input type="text" id="qr-in" value="https://lyh-03.github.io/opentools/"></div>
           <div><label>尺寸</label><select id="qr-sz"><option value="5">小</option><option value="10" selected>中</option><option value="20">大</option></select></div>
         </div>
-        <button class="btn bp" style="margin-top:10px" onclick="qrGo()">生成</button>
+        <div class="row" style="margin-top:8px">
+          <div><label>前景色</label><input type="text" id="qr-fg" value="#000000"></div>
+          <div><label>背景色</label><input type="text" id="qr-bg" value="#ffffff"></div>
+          <div><label>纠错级别</label><select id="qr-ec"><option value="L">L (7%)</option><option value="M" selected>M (15%)</option><option value="Q">Q (25%)</option><option value="H">H (30%)</option></select></div>
+        </div>
+        <div style="margin-top:8px"><label>Logo 图片（可选）</label><input type="file" id="qr-logo" accept="image/*" style="font-size:.82rem"></div>
+        <div style="margin-top:10px;display:flex;gap:8px">
+          <button class="btn bp" onclick="qrGo()">生成</button>
+          <button class="btn bo bs" onclick="qrGoSVG()">生成 SVG</button>
+        </div>
         <div id="qr-res" aria-live="polite" style="margin-top:12px;text-align:center"></div>
       </div>
     </div>
@@ -1527,21 +1544,42 @@ async function imgMerge(){safeRun(async function(){
   var bg=document.getElementById('mg-bg').value;
   var imgs=[];
   for(var i=0;i<mgFiles.length;i++)imgs.push(await loadImg(mgFiles[i]));
-  var totalW=0,totalH=0,maxW=0,maxH=0;
-  imgs.forEach(function(img){
-    if(dir==='v'){totalH+=img.height;maxW=Math.max(maxW,img.width)}
-    else{totalW+=img.width;maxH=Math.max(maxH,img.height)}
-  });
-  var cW=dir==='v'?maxW:totalW+gap*(imgs.length-1);
-  var cH=dir==='v'?totalH+gap*(imgs.length-1):maxH;
-  var c=document.createElement('canvas');c.width=cW;c.height=cH;
-  var ctx=c.getContext('2d');ctx.fillStyle=bg;ctx.fillRect(0,0,cW,cH);
-  var x=0,y=0;
-  imgs.forEach(function(img){
-    if(dir==='v'){ctx.drawImage(img,(maxW-img.width)/2,y);y+=img.height+gap}
-    else{ctx.drawImage(img,x,(maxH-img.height)/2);x+=img.width+gap}
-  });
-  c.toBlob(function(blob){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='merged.png';a.click();releaseLock('mg')});
+  var n=imgs.length;
+  // Smart layout: auto-calculate best grid
+  if(dir==='auto'){
+    var cols=Math.ceil(Math.sqrt(n));
+    var rows=Math.ceil(n/cols);
+    // Find max cell size
+    var cellW=0,cellH=0;
+    imgs.forEach(function(img){cellW=Math.max(cellW,img.width);cellH=Math.max(cellH,img.height)});
+    var cW=cols*cellW+gap*(cols+1);
+    var cH=rows*cellH+gap*(rows+1);
+    var c=document.createElement('canvas');c.width=cW;c.height=cH;
+    var ctx=c.getContext('2d');ctx.fillStyle=bg;ctx.fillRect(0,0,cW,cH);
+    imgs.forEach(function(img,i){
+      var col=i%cols,row=Math.floor(i/cols);
+      var x=gap+col*(cellW+gap)+(cellW-img.width)/2;
+      var y=gap+row*(cellH+gap)+(cellH-img.height)/2;
+      ctx.drawImage(img,x,y);
+    });
+    c.toBlob(function(blob){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='merged_'+cols+'x'+rows+'.png';a.click();releaseLock('mg')});
+  }else{
+    var totalW=0,totalH=0,maxW=0,maxH=0;
+    imgs.forEach(function(img){
+      if(dir==='v'){totalH+=img.height;maxW=Math.max(maxW,img.width)}
+      else{totalW+=img.width;maxH=Math.max(maxH,img.height)}
+    });
+    var cW=dir==='v'?maxW:totalW+gap*(imgs.length-1);
+    var cH=dir==='v'?totalH+gap*(imgs.length-1):maxH;
+    var c=document.createElement('canvas');c.width=cW;c.height=cH;
+    var ctx=c.getContext('2d');ctx.fillStyle=bg;ctx.fillRect(0,0,cW,cH);
+    var x=0,y=0;
+    imgs.forEach(function(img){
+      if(dir==='v'){ctx.drawImage(img,(maxW-img.width)/2,y);y+=img.height+gap}
+      else{ctx.drawImage(img,x,(maxH-img.height)/2);x+=img.width+gap}
+    });
+    c.toBlob(function(blob){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='merged.png';a.click();releaseLock('mg')});
+  }
 },'mg-res');}
 
 // ===== Text to Image =====
@@ -1669,21 +1707,82 @@ function cpUpd(){
     else h=((rf-gf)/d+4)*60;
   }
   document.getElementById('cp-hsl').textContent='hsl('+Math.round(h)+', '+Math.round(s*100)+'%, '+Math.round(l*100)+'%)';
+  // WCAG 对比度检查
+  var lumR=rf<=0.03928?rf/12.92:Math.pow((rf+0.055)/1.055,2.4);
+  var lumG=gf<=0.03928?gf/12.92:Math.pow((gf+0.055)/1.055,2.4);
+  var lumB=bf<=0.03928?bf/12.92:Math.pow((bf+0.055)/1.055,2.4);
+  var lum=0.2126*lumR+0.7152*lumG+0.0722*lumB;
+  var whiteLum=1.0,blackLum=0.0;
+  var contrastWhite=(whiteLum+0.05)/(lum+0.05);
+  var contrastBlack=(lum+0.05)/(blackLum+0.05);
+  var aa=contrastWhite>=4.5||contrastBlack>=4.5;
+  var aaa=contrastWhite>=7||contrastBlack>=7;
+  var bestBg=contrastWhite>contrastBlack?'#ffffff':'#000000';
+  var bestContrast=Math.max(contrastWhite,contrastBlack).toFixed(1);
+  document.getElementById('cp-wcag').innerHTML=
+    '<b>WCAG 对比度</b> (vs '+bestBg+'): '+bestContrast+':1 → '
+    +(aaa?'<span style="color:var(--green)">✅ AAA 通过</span>':aa?'<span style="color:var(--green)">✅ AA 通过</span>':'<span style="color:var(--red)">❌ 不通过</span>');
+  // 颜色变体
+  var vars=document.getElementById('cp-vars');
+  var variants=[
+    {name:'浅色 20%',f:function(r,g,b){return[Math.min(255,r+51),Math.min(255,g+51),Math.min(255,b+51)]}},
+    {name:'深色 20%',f:function(r,g,b){return[Math.max(0,r-51),Math.max(0,g-51),Math.max(0,b-51)]}},
+    {name:'互补色',f:function(r,g,b){return[255-r,255-g,255-b]}},
+    {name:'暖色调整',f:function(r,g,b){return[Math.min(255,r+20),g,Math.max(0,b-20)]}}
+  ];
+  var vhtml='<label style="font-size:.78rem;color:var(--dim)">颜色变体</label><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">';
+  variants.forEach(function(v){
+    var c=v.f(r,g,b);
+    var cHex='#'+c.map(function(x){return x.toString(16).padStart(2,'0')}).join('');
+    vhtml+='<div style="text-align:center;cursor:pointer" onclick="document.getElementById(\'cp-in\').value=\''+cHex+'\';cpUpd()" title="'+v.name+'"><div style="width:36px;height:36px;border-radius:8px;background:'+cHex+';border:1px solid var(--border)"></div><div style="font-size:.65rem;color:var(--dim);margin-top:2px">'+v.name+'</div></div>';
+  });
+  vhtml+='</div>';
+  vars.innerHTML=vhtml;
+  // CSS 代码
+  document.getElementById('cp-css').textContent=
+    'color: '+hex+';\nbackground: '+hex+';\nrgb('+r+', '+g+', '+b+')\nhsl('+Math.round(h)+', '+Math.round(s*100)+'%, '+Math.round(l*100)+'%)';
+  // 颜色历史
+  cpHistory.push(hex);
+  if(cpHistory.length>10)cpHistory=cpHistory.slice(-10);
+  try{localStorage.setItem('toolbox_cp_history',JSON.stringify(cpHistory))}catch(e){}
+  renderCpHistory();
 }
+var cpHistory=[];
+try{cpHistory=JSON.parse(localStorage.getItem('toolbox_cp_history')||'[]')}catch(e){}
+function renderCpHistory(){
+  var el=document.getElementById('cp-history');
+  if(!el||!cpHistory.length)return;
+  var html='<label style="font-size:.78rem;color:var(--dim)">最近使用</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">';
+  cpHistory.slice().reverse().forEach(function(c){
+    html+='<div style="width:28px;height:28px;border-radius:6px;background:'+c+';border:1px solid var(--border);cursor:pointer" onclick="document.getElementById(\'cp-in\').value=\''+c+'\';cpUpd()" title="'+c+'"></div>';
+  });
+  html+='</div>';
+  el.innerHTML=html;
+}
+renderCpHistory();
 cpUpd();
 function cpCpy(t){
-  var v=document.getElementById(t==='hex'?'cp-hex':t==='rgb'?'cp-rgb':'cp-hsl').textContent;
-  navigator.clipboard.writeText(v).then(function(){showToast('✅ 已复制: '+v)});
+  var v;
+  if(t==='css'){
+    v=document.getElementById('cp-css').textContent;
+  }else{
+    v=document.getElementById(t==='hex'?'cp-hex':t==='rgb'?'cp-rgb':'cp-hsl').textContent;
+  }
+  navigator.clipboard.writeText(v).then(function(){showToast('✅ 已复制到剪贴板')});
 }
 
 // ===== QR Code (use qrcode-generator library) =====
 function qrGo(){
   var text=document.getElementById('qr-in').value;
-  if(!text){alert('请输入内容');return}
+  if(!text){showToast('请输入内容');return}
   var cellSize=parseInt(document.getElementById('qr-sz').value);
+  var fg=document.getElementById('qr-fg').value||'#000000';
+  var bg=document.getElementById('qr-bg').value||'#ffffff';
+  var ec=document.getElementById('qr-ec').value||'M';
+  var ecLevel={L:1,M:0,Q:3,H:2}[ec]||0;
   try{
-    if(typeof qrcode==='undefined'){alert('⏳ 二维码库加载中，请稍后重试');return}
-    var qr=qrcode(0,'M');
+    if(typeof qrcode==='undefined'){showToast('⏳ 二维码库加载中，请稍后重试');return}
+    var qr=qrcode(ecLevel,ec);
     qr.addData(text);
     qr.make();
     var n=qr.getModuleCount();
@@ -1691,15 +1790,53 @@ function qrGo(){
     var total=(n+pad*2)*cellSize;
     var canvas=document.createElement('canvas');canvas.width=total;canvas.height=total;
     var ctx=canvas.getContext('2d');
-    ctx.fillStyle='#ffffff';ctx.fillRect(0,0,total,total);
-    ctx.fillStyle='#000000';
+    ctx.fillStyle=bg;ctx.fillRect(0,0,total,total);
+    ctx.fillStyle=fg;
     for(var r=0;r<n;r++){for(var c=0;c<n;c++){if(qr.isDark(r,c)){ctx.fillRect((c+pad)*cellSize,(r+pad)*cellSize,cellSize,cellSize)}}}
-    var el=document.getElementById('qr-res');el.innerHTML='';
-    el.appendChild(canvas);
-    var a=document.createElement('a');a.href=canvas.toDataURL();a.download='qrcode.png';
-    a.innerHTML='<br><button class="btn bo bs" style="margin-top:8px">💾 下载</button>';
-    el.appendChild(a);
+    // Logo overlay
+    var logoFile=document.getElementById('qr-logo').files[0];
+    if(logoFile){
+      var logoImg=new Image();logoImg.onload=function(){
+        var logoSize=total*0.2;
+        var lx=(total-logoSize)/2,ly=(total-logoSize)/2;
+        ctx.fillStyle=bg;ctx.fillRect(lx-4,ly-4,logoSize+8,logoSize+8);
+        ctx.drawImage(logoImg,lx,ly,logoSize,logoSize);
+        finishQR(canvas);
+      };logoImg.src=URL.createObjectURL(logoFile);
+    }else{
+      finishQR(canvas);
+    }
   }catch(e){document.getElementById('qr-res').innerHTML='<span class="err">生成失败: '+esc(e.message)+'</span>'}
+}
+function finishQR(canvas){
+  var el=document.getElementById('qr-res');el.innerHTML='';
+  el.appendChild(canvas);
+  var a=document.createElement('a');a.href=canvas.toDataURL();a.download='qrcode.png';
+  a.innerHTML='<br><button class="btn bo bs" style="margin-top:8px">💾 下载 PNG</button>';
+  el.appendChild(a);
+}
+function qrGoSVG(){
+  var text=document.getElementById('qr-in').value;
+  if(!text){showToast('请输入内容');return}
+  var cellSize=parseInt(document.getElementById('qr-sz').value);
+  var fg=document.getElementById('qr-fg').value||'#000000';
+  var bg=document.getElementById('qr-bg').value||'#ffffff';
+  var ec=document.getElementById('qr-ec').value||'M';
+  var ecLevel={L:1,M:0,Q:3,H:2}[ec]||0;
+  try{
+    if(typeof qrcode==='undefined'){showToast('⏳ 二维码库加载中');return}
+    var qr=qrcode(ecLevel,ec);
+    qr.addData(text);qr.make();
+    var n=qr.getModuleCount();
+    var pad=4;
+    var total=(n+pad*2)*cellSize;
+    var svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+total+'" height="'+total+'">';
+    svg+='<rect width="'+total+'" height="'+total+'" fill="'+bg+'"/>';
+    for(var r=0;r<n;r++){for(var c=0;c<n;c++){if(qr.isDark(r,c)){svg+='<rect x="'+(c+pad)*cellSize+'" y="'+(r+pad)*cellSize+'" width="'+cellSize+'" height="'+cellSize+'" fill="'+fg+'"/>'}}}
+    svg+='</svg>';
+    dlBlob(svg,'qrcode.svg','image/svg+xml');
+    showToast('✅ SVG 已下载');
+  }catch(e){showToast('生成失败: '+e.message)}
 }
 
 // 删除了有 bug 的自实现 qrEncode 函数，改用 qrcode-generator 库
