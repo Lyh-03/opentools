@@ -62,8 +62,8 @@ input[type=text],input[type=number],select,textarea{padding:9px 12px;border-radi
 input:focus,select:focus,textarea:focus{border-color:var(--accent)}
 textarea{resize:vertical;min-height:90px}
 label{font-size:.78rem;color:var(--dim);display:block;margin-bottom:5px}
-.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
-.row>*{flex:1;min-width:100px}
+.row{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));align-items:end}
+.row>*{min-width:0}
 .dz{border:2px dashed rgba(42,42,61,0.25);border-radius:var(--radius);padding:30px;text-align:center;cursor:pointer;transition:all .2s;color:var(--dim);background:rgba(15,15,19,0.12)}
 .dz:hover,.dz.drag{border-color:var(--accent);background:rgba(108,99,255,.08)}
 .dz .big{font-size:2rem;margin-bottom:8px}
@@ -122,6 +122,7 @@ body.light .footer-bar{background:rgba(232,232,240,0.9);color:rgba(80,80,100,0.8
   .btn{padding:10px 16px;font-size:.85rem;min-height:44px}
   .chip{min-height:44px;display:inline-flex;align-items:center}
   .ni{min-height:44px}
+  .row{grid-template-columns:1fr}
 }
 
 /* 工具切换动画 */
@@ -1871,14 +1872,31 @@ function b64Go(){
 // ===== Hash =====
 async function hashGo(){
   var text=document.getElementById('hash-in').value;
-  var data=new TextEncoder().encode(text);
-  var html='';
-  for(var algo of ['SHA-1','SHA-256','SHA-512']){
-    var hash=await crypto.subtle.digest(algo,data);
-    var hex=Array.from(new Uint8Array(hash)).map(function(b){return b.toString(16).padStart(2,'0')}).join('');
-    html+='<div style="margin:6px 0"><label style="color:var(--accent2)">'+algo+'</label><div class="rb" style="cursor:pointer" onclick="navigator.clipboard.writeText(this.textContent);showToast(\'✅ 已复制\')">'+hex+'</div></div>';
-  }
-  document.getElementById('hash-res').innerHTML=html;
+  if(!text.trim()){showToast('请输入文本');return}
+  var resEl=document.getElementById('hash-res');
+  resEl.innerHTML='<span style="color:var(--dim)">计算中...</span>';
+  runWorkerTask('hash',text,function(data){
+    if(!data||!data.result){
+      // Fallback to main thread
+      (async function(){
+        var d=new TextEncoder().encode(text);
+        var html='';
+        for(var algo of ['SHA-1','SHA-256','SHA-512']){
+          var hash=await crypto.subtle.digest(algo,d);
+          var hex=Array.from(new Uint8Array(hash)).map(function(b){return b.toString(16).padStart(2,'0')}).join('');
+          html+='<div style="margin:6px 0"><label style="color:var(--accent2)">'+algo+'</label><div class="rb" style="cursor:pointer" onclick="navigator.clipboard.writeText(this.textContent);showToast(\'✅ 已复制\')">'+hex+'</div></div>';
+        }
+        resEl.innerHTML=html;
+      })();
+      return;
+    }
+    var html='';
+    var r=data.result;
+    Object.keys(r).forEach(function(algo){
+      html+='<div style="margin:6px 0"><label style="color:var(--accent2)">'+algo+'</label><div class="rb" style="cursor:pointer" onclick="navigator.clipboard.writeText(this.textContent);showToast(\'✅ 已复制\')">'+r[algo]+'</div></div>';
+    });
+    resEl.innerHTML=html;
+  });
 }
 
 // ===== OCR 文字识别 =====
@@ -2778,6 +2796,29 @@ function showPrivacy(){
   w.document.write('<div class="footer">最后更新：2025年7月</div>');
   w.document.write('</body></html>');
   w.document.close();
+}
+
+// ===== Web Worker 管理 =====
+var _worker=null;
+var _workerCallbacks={};
+function getWorker(){
+  if(_worker)return _worker;
+  try{
+    _worker=new Worker('worker.js');
+    _worker.onmessage=function(e){
+      var data=e.data;
+      var cb=_workerCallbacks[data.type];
+      if(cb){cb(data);delete _workerCallbacks[data.type]}
+    };
+    _worker.onerror=function(e){console.error('Worker error:',e)};
+  }catch(e){console.warn('Worker unavailable:',e)}
+  return _worker;
+}
+function runWorkerTask(type,input,callback){
+  var w=getWorker();
+  if(!w){callback(null);return}
+  _workerCallbacks[type]=callback;
+  w.postMessage({type:type,input:input});
 }
 
 // ===== 全局错误边界 =====
