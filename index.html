@@ -245,6 +245,8 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{border-color:var
     <div class="ni" data-t="comp"><span class="ic">🗜️</span>图片压缩</div>
     <div class="ni" data-t="resize"><span class="ic">📐</span>图片缩放</div>
     <div class="ni" data-t="wm"><span class="ic">💧</span>图片加水印</div>
+    <div class="ni" data-t="bgremove"><span class="ic">✂️</span>背景移除</div>
+    <div class="ni" data-t="idphoto"><span class="ic">📷</span>证件照制作</div>
     <div class="ni" data-t="cp"><span class="ic">🎨</span>颜色拾取</div>
   </div>
   <div class="nav-g">
@@ -592,9 +594,22 @@ console.log('Hi');
         <div class="img-row" id="cmp-pv"></div>
       </div>
       <div class="sec">
-        <div class="row">
-          <div><label>压缩质量 <span id="cmp-v">70</span>%</label><input type="range" id="cmp-q" min="10" max="100" value="70" style="width:100%;accent-color:var(--accent)" oninput="document.getElementById('cmp-v').textContent=this.value"></div>
-          <div><label>格式</label><select id="cmp-fmt"><option value="image/jpeg">JPEG</option><option value="image/webp">WebP</option></select></div>
+        <div style="display:flex;gap:6px;margin-bottom:10px">
+          <span class="chip on" onclick="cmpMode('quality')" id="cm-quality">手动质量</span>
+          <span class="chip" onclick="cmpMode('target')" id="cm-target">🎯 目标大小</span>
+        </div>
+        <div id="cmp-quality-sec">
+          <div class="row">
+            <div><label>压缩质量 <span id="cmp-v">70</span>%</label><input type="range" id="cmp-q" min="10" max="100" value="70" style="width:100%;accent-color:var(--accent)" oninput="document.getElementById('cmp-v').textContent=this.value"></div>
+            <div><label>格式</label><select id="cmp-fmt"><option value="image/jpeg">JPEG</option><option value="image/webp">WebP</option></select></div>
+          </div>
+        </div>
+        <div id="cmp-target-sec" style="display:none">
+          <div class="row">
+            <div><label>目标文件大小</label><div style="display:flex;gap:8px;align-items:center"><input type="number" id="cmp-target" value="500" min="1"><select id="cmp-target-unit"><option value="KB">KB</option><option value="MB">MB</option></select></div></div>
+            <div><label>格式</label><select id="cmp-tgt-fmt"><option value="image/jpeg">JPEG</option><option value="image/webp">WebP</option></select></div>
+          </div>
+          <div style="font-size:.75rem;color:var(--dim);margin-top:6px">💡 系统会自动调整质量参数，使文件大小接近目标值</div>
         </div>
         <button class="btn bp" style="margin-top:12px" onclick="cmpGo()">🗜️ 压缩</button>
       </div>
@@ -638,6 +653,41 @@ console.log('Hi');
           <div><label>位置</label><select id="wm-p"><option value="center">居中</option><option value="br" selected>右下</option><option value="bl">左下</option><option value="tr">右上</option><option value="tl">左上</option><option value="tile">平铺</option></select></div>
         </div>
         <button class="btn bp" style="margin-top:12px" onclick="wmGo()">添加水印</button>
+      </div>
+    </div>
+
+    <!-- 背景移除 -->
+    <div class="tp" id="p-bgremove">
+      <div class="sec">
+        <div class="st">✂️ 图片背景移除</div>
+        <div class="dz" id="bgr-dz"><div class="big">✂️</div><p>选择图片自动去除背景</p></div>
+        <input type="file" id="bgr-f" accept="image/*" hidden>
+        <div class="img-row" id="bgr-pv"></div>
+        <div style="margin-top:10px"><label>背景颜色</label>
+          <select id="bgr-bg"><option value="transparent">透明</option><option value="white">白色</option><option value="blue">蓝色(证件照)</option><option value="red">红色(证件照)</option><option value="custom">自定义颜色</option></select>
+        </div>
+        <div id="bgr-custom-sec" style="display:none;margin-top:8px"><label>自定义颜色</label><input type="color" id="bgr-custom" value="#ffffff"></div>
+        <button class="btn bp" style="margin-top:12px" id="bgr-btn" onclick="bgrGo()">✂️ 移除背景</button>
+        <div id="bgr-st" style="font-size:.78rem;color:var(--dim);margin-top:6px"></div>
+        <div id="bgr-res" aria-live="polite" style="margin-top:10px"></div>
+      </div>
+    </div>
+
+    <!-- 证件照 -->
+    <div class="tp" id="p-idphoto">
+      <div class="sec">
+        <div class="st">📷 证件照制作</div>
+        <div class="dz" id="idp-dz"><div class="big">📷</div><p>选择正面照片</p></div>
+        <input type="file" id="idp-f" accept="image/*" hidden>
+        <div class="img-row" id="idp-pv"></div>
+        <div class="row" style="margin-top:10px">
+          <div><label>照片尺寸</label><select id="idp-size"><option value="1x">一寸 (25x35mm)</option><option value="2x">二寸 (35x49mm)</option><option value="small1x">小一寸 (22x32mm)</option><option value="passport">护照 (33x48mm)</option><option value="visa">签证 (35x45mm)</option></select></div>
+          <div><label>背景颜色</label><select id="idp-bg"><option value="white">白色</option><option value="blue">蓝色</option><option value="red">红色</option></select></div>
+        </div>
+        <div style="margin-top:10px;font-size:.78rem;color:var(--dim)">💡 建议使用正面免冠照片，背景尽量简洁</div>
+        <button class="btn bp" style="margin-top:12px" id="idp-btn" onclick="idpGo()">📷 生成证件照</button>
+        <div id="idp-st" style="font-size:.78rem;color:var(--dim);margin-top:6px"></div>
+        <div id="idp-res" aria-live="polite" style="margin-top:10px"></div>
       </div>
     </div>
 
@@ -1197,10 +1247,11 @@ console.log('Hi');
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/index.js" defer></script>
 <script>
 // ===== Navigation =====
-var titles={imgcv:'图片格式转换',pdf:'图片转 PDF',word2html:'Word 转 HTML',word2txt:'Word 转文本',word2md:'Word 转 Markdown',word2pdf:'Word 转 PDF',txt2word:'文本 转 Word',html2word:'HTML 转 Word',xls2csv:'Excel 转 CSV',xls2json:'Excel 转 JSON',xls2html:'Excel 转 HTML',xls2txt:'Excel 转文本',csv2xls:'CSV 转 Excel',json2xls:'JSON 转 Excel',md:'Markdown 编辑器',csv2json:'CSV 转 JSON',json2csv:'JSON 转 CSV',txt2pdf:'文本转 PDF',img2base:'图片转 Base64',img2ico:'图片转 ICO',imgmerge:'图片拼接',txt2img:'文字转图片',v2a:'视频提取音频',acv:'音频格式转换',vcv:'视频格式转换',vcut:'视频剪切',vframe:'视频提取帧图片',comp:'图片压缩',resize:'图片缩放',wm:'图片加水印',cp:'颜色拾取',ocr:'OCR 文字识别',qr:'二维码生成',b64:'Base64 编解码',hash:'哈希计算',jf:'JSON 格式化',re:'正则测试',diff:'文本对比',url:'URL 编解码',ts:'时间戳转换',zip:'ZIP 压缩',diskclean:'浏览器缓存清理',storesense:'存储感知',sysclean:'系统文件清理',cmdclean:'CMD 一键清理',pwd:'密码生成器',unit:'单位换算',codefmt:'代码格式化',fake:'假数据生成',pomodoro:'番茄钟',todo:'待办清单',wc:'字数统计',palette:'调色板生成'};
-var descs={imgcv:'PNG/JPG/WebP/BMP 互转',pdf:'多张图片合并为 PDF',word2html:'将 .docx 转为 HTML 网页',word2txt:'将 .docx 转为纯文本',word2md:'将 .docx 转为 Markdown',word2pdf:'将 .docx 转为 PDF 打印',txt2word:'将纯文本转为 .docx',html2word:'将 HTML 转为 .docx',xls2csv:'将 Excel 转为 CSV',xls2json:'将 Excel 转为 JSON',xls2html:'将 Excel 转为 HTML 表格',xls2txt:'将 Excel 转为纯文本',csv2xls:'将 CSV 转为 .xlsx',json2xls:'将 JSON 转为 .xlsx',md:'实时预览，导出 HTML',csv2json:'将 CSV 转为 JSON',json2csv:'将 JSON 转为 CSV',txt2pdf:'输入文字生成 PDF',img2base:'图片转为 Base64',img2ico:'生成网站 favicon',imgmerge:'多张图片拼接成一张',txt2img:'把文字做成图片',v2a:'从视频中提取音频',acv:'音频格式互转',vcv:'视频格式互转',vcut:'截取视频片段',vframe:'提取帧图片',comp:'压缩图片体积',resize:'按尺寸缩放图片',wm:'添加文字水印',cp:'拾取颜色 HEX/RGB/HSL',ocr:'本地识别图片文字',qr:'生成二维码',b64:'文本与 Base64 互转',hash:'SHA-1/SHA-256',jf:'格式化或压缩 JSON',re:'正则在线测试',diff:'高亮文本差异',url:'URL 编码解码',ts:'时间戳转换',zip:'压缩文件为 ZIP',diskclean:'清理浏览器缓存',storesense:'开启自动定期清理',sysclean:'清理更新缓存和旧版本',cmdclean:'命令行快速清理临时文件',pwd:'生成随机强密码',unit:'长度/重量/温度/数据等换算',codefmt:'HTML/CSS/JS/SQL 格式化压缩',fake:'姓名/手机/邮箱/地址等',pomodoro:'25分钟专注计时',todo:'本地待办清单',wc:'中英文字符/词/行统计',palette:'互补色/三角色/类似色等方案'};
+var titles={imgcv:'图片格式转换',pdf:'图片转 PDF',word2html:'Word 转 HTML',word2txt:'Word 转文本',word2md:'Word 转 Markdown',word2pdf:'Word 转 PDF',txt2word:'文本 转 Word',html2word:'HTML 转 Word',xls2csv:'Excel 转 CSV',xls2json:'Excel 转 JSON',xls2html:'Excel 转 HTML',xls2txt:'Excel 转文本',csv2xls:'CSV 转 Excel',json2xls:'JSON 转 Excel',md:'Markdown 编辑器',csv2json:'CSV 转 JSON',json2csv:'JSON 转 CSV',txt2pdf:'文本转 PDF',img2base:'图片转 Base64',img2ico:'图片转 ICO',imgmerge:'图片拼接',txt2img:'文字转图片',v2a:'视频提取音频',acv:'音频格式转换',vcv:'视频格式转换',vcut:'视频剪切',vframe:'视频提取帧图片',comp:'图片压缩',resize:'图片缩放',wm:'图片加水印',cp:'颜色拾取',ocr:'OCR 文字识别',qr:'二维码生成',b64:'Base64 编解码',hash:'哈希计算',jf:'JSON 格式化',re:'正则测试',diff:'文本对比',url:'URL 编解码',ts:'时间戳转换',zip:'ZIP 压缩',diskclean:'浏览器缓存清理',storesense:'存储感知',sysclean:'系统文件清理',cmdclean:'CMD 一键清理',pwd:'密码生成器',unit:'单位换算',codefmt:'代码格式化',fake:'假数据生成',pomodoro:'番茄钟',todo:'待办清单',wc:'字数统计',palette:'调色板生成',bgremove:'背景移除',idphoto:'证件照制作'};
+var descs={imgcv:'PNG/JPG/WebP/BMP 互转',pdf:'多张图片合并为 PDF',word2html:'将 .docx 转为 HTML 网页',word2txt:'将 .docx 转为纯文本',word2md:'将 .docx 转为 Markdown',word2pdf:'将 .docx 转为 PDF 打印',txt2word:'将纯文本转为 .docx',html2word:'将 HTML 转为 .docx',xls2csv:'将 Excel 转为 CSV',xls2json:'将 Excel 转为 JSON',xls2html:'将 Excel 转为 HTML 表格',xls2txt:'将 Excel 转为纯文本',csv2xls:'将 CSV 转为 .xlsx',json2xls:'将 JSON 转为 .xlsx',md:'实时预览，导出 HTML',csv2json:'将 CSV 转为 JSON',json2csv:'将 JSON 转为 CSV',txt2pdf:'输入文字生成 PDF',img2base:'图片转为 Base64',img2ico:'生成网站 favicon',imgmerge:'多张图片拼接成一张',txt2img:'把文字做成图片',v2a:'从视频中提取音频',acv:'音频格式互转',vcv:'视频格式互转',vcut:'截取视频片段',vframe:'提取帧图片',comp:'压缩图片体积(支持目标大小)',resize:'按尺寸缩放图片',wm:'添加文字水印',cp:'拾取颜色 HEX/RGB/HSL',ocr:'本地识别图片文字',qr:'生成二维码',b64:'文本与 Base64 互转',hash:'SHA-1/SHA-256',jf:'格式化或压缩 JSON',re:'正则在线测试',diff:'高亮文本差异',url:'URL 编码解码',ts:'时间戳转换',zip:'压缩文件为 ZIP',diskclean:'清理浏览器缓存',storesense:'开启自动定期清理',sysclean:'清理更新缓存和旧版本',cmdclean:'命令行快速清理临时文件',pwd:'生成随机强密码',unit:'长度/重量/温度/数据等换算',codefmt:'HTML/CSS/JS/SQL 格式化压缩',fake:'姓名/手机/邮箱/地址等',pomodoro:'25分钟专注计时',todo:'本地待办清单',wc:'中英文字符/词/行统计',palette:'互补色/三角色/类似色等方案',bgremove:'AI自动移除图片背景',idphoto:'一寸/二寸/护照/签证尺寸'};
 document.querySelectorAll('.ni').forEach(function(el){
   if(!el.getAttribute('tabindex'))el.setAttribute('tabindex','0');
   if(!el.getAttribute('role'))el.setAttribute('role','menuitem');
@@ -1794,6 +1845,13 @@ setupDz('cmp-dz','cmp-f',function(f){cmpFiles=Array.from(f);if(cmpFiles.some(fun
 function cmpGo(){safeRun(function(){
   if(!acquireLock('cmp'))return;
   if(!cmpFiles.length){showToast('请先选图');return}
+  if(cmpMode_cur==='target'){
+    cmpGoTarget();
+  }else{
+    cmpGoQuality();
+  }
+});}
+function cmpGoQuality(){
   var q=parseInt(document.getElementById('cmp-q').value)/100;
   var fmt=document.getElementById('cmp-fmt').value;
   var ext=fmt.split('/')[1]==='jpeg'?'jpg':'webp';
@@ -1819,7 +1877,53 @@ function cmpGo(){safeRun(function(){
       },fmt,q);
     };img.src=URL.createObjectURL(f);
   });
-},'cmp-res');}
+}
+function cmpGoTarget(){
+  var targetKB=parseFloat(document.getElementById('cmp-target').value)||500;
+  var unit=document.getElementById('cmp-target-unit').value;
+  var targetBytes=unit==='MB'?targetKB*1024*1024:targetKB*1024;
+  var fmt=document.getElementById('cmp-tgt-fmt').value;
+  var ext=fmt.split('/')[1]==='jpeg'?'jpg':'webp';
+  var res=document.getElementById('cmp-res');res.innerHTML='';
+  var count=0;
+  cmpFiles.forEach(function(f){
+    if(f.size<=targetBytes){
+      res.innerHTML+='<div style="margin-top:6px"><span class="ok">✓</span> '+esc(f.name)+': 已经小于目标大小 ('+(f.size/1024).toFixed(0)+'KB < '+targetKB+unit+')</div>';
+      count++;if(count===cmpFiles.length)releaseLock('cmp');
+      return;
+    }
+    var img=new Image();img.onload=function(){
+      var c=document.createElement('canvas');c.width=img.width;c.height=img.height;
+      c.getContext('2d').drawImage(img,0,0);
+      // Binary search for optimal quality
+      var lo=1,hi=100,bestBlob=null,bestQ=50;
+      function tryQuality(q){
+        c.toBlob(function(blob){
+          if(!blob){count++;if(count===cmpFiles.length)releaseLock('cmp');return}
+          if(blob.size<=targetBytes){
+            if(!bestBlob||blob.size>bestBlob.size){bestBlob=blob;bestQ=q}
+            lo=q+1;
+          }else{hi=q-1}
+          if(lo<=hi&&hi>=1){
+            tryQuality(Math.floor((lo+hi)/2));
+          }else{
+            if(!bestBlob)bestBlob=blob;
+            var url=URL.createObjectURL(bestBlob);
+            var saving=((1-bestBlob.size/f.size)*100).toFixed(1);
+            var a=document.createElement('a');a.href=url;a.download='compressed_'+f.name.replace(/\.[^.]+$/,'.'+ext);
+            var div=document.createElement('div');div.style.marginTop='6px';
+            div.innerHTML='<span class="ok">✓</span> '+esc(f.name)+': '+(f.size/1024).toFixed(0)+'KB → '+(bestBlob.size/1024).toFixed(0)+'KB <span class="ok">(-'+saving+'%)</span> 质量:'+bestQ+'% <a href="'+url+'" download="'+esc(a.download)+'">下载</a>';
+            res.appendChild(div);a.click();
+            URL.revokeObjectURL(img.src);
+            setTimeout(function(){URL.revokeObjectURL(url)},3000);
+            count++;if(count===cmpFiles.length)releaseLock('cmp');
+          }
+        },fmt,q/100);
+      }
+      tryQuality(50);
+    };img.src=URL.createObjectURL(f);
+  });
+}
 
 // ===== Resize =====
 var rszFile=null;
@@ -2749,7 +2853,7 @@ var categories={
   '文件转换':['imgcv','pdf','word2html','word2txt','word2md','word2pdf','txt2word','html2word','xls2csv','xls2json','xls2html','xls2txt','csv2xls','json2xls','md','csv2json','json2csv','txt2pdf','img2base','img2ico','imgmerge','txt2img'],
   '压缩':['zip'],
   '音视频':['v2a','acv','vcv','vcut','vframe'],
-  '图片工具':['comp','resize','wm','cp'],
+  '图片工具':['comp','resize','wm','cp','bgremove','idphoto'],
   '识别编码':['ocr','qr','b64','hash'],
   '开发者':['jf','re','diff','url','ts','pwd','unit','codefmt','fake'],
   '效率工具':['pomodoro','todo','wc','palette'],
@@ -2961,6 +3065,164 @@ function showPrivacy(){
   w.document.write('<div class="footer">最后更新：2025年7月</div>');
   w.document.write('</body></html>');
   w.document.close();
+}
+
+// ===== 智能压缩模式切换 =====
+var cmpMode_cur='quality';
+function cmpMode(mode){
+  cmpMode_cur=mode;
+  document.getElementById('cm-quality').classList.toggle('on',mode==='quality');
+  document.getElementById('cm-target').classList.toggle('on',mode==='target');
+  document.getElementById('cmp-quality-sec').style.display=mode==='quality'?'':'none';
+  document.getElementById('cmp-target-sec').style.display=mode==='target'?'':'none';
+}
+document.getElementById('bgr-bg').onchange=function(){
+  document.getElementById('bgr-custom-sec').style.display=this.value==='custom'?'':'none';
+};
+
+// ===== 背景移除 =====
+var bgrFile=null;
+setupDz('bgr-dz','bgr-f',function(f){bgrFile=f[0];if(!checkFileSize(bgrFile,20))return;showPv(f,'bgr-pv')});
+async function bgrGo(){
+  if(!bgrFile){showToast('请先选择图片');return}
+  var btn=document.getElementById('bgr-btn');
+  var stEl=document.getElementById('bgr-st');
+  var resEl=document.getElementById('bgr-res');
+  btn.disabled=true;btn.textContent='⏳ 处理中...';
+  stEl.textContent='正在加载AI模型（首次约40MB）...';
+  showProgressIndeterminate();
+  try{
+    // Load background removal library
+    if(!window.bgRemove){
+      await loadScript('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/index.js');
+    }
+    if(!window.bgRemove){
+      // Fallback: simple canvas-based approach
+      stEl.textContent='使用简易模式处理...';
+      var img=await loadImg(bgrFile);
+      var canvas=document.createElement('canvas');
+      canvas.width=img.width;canvas.height=img.height;
+      var ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0);
+      var imageData=ctx.getImageData(0,0,canvas.width,canvas.height);
+      var data=imageData.data;
+      // Simple edge-detect based background removal
+      var bgR=data[0],bgG=data[1],bgB=data[2];
+      var threshold=80;
+      for(var i=0;i<data.length;i+=4){
+        var dr=data[i]-bgR,dg=data[i+1]-bgG,db=data[i+2]-bgB;
+        if(Math.sqrt(dr*dr+dg*dg+db*db)<threshold){
+          data[i+3]=0;
+        }
+      }
+      ctx.putImageData(imageData,0,0);
+      applyBgrBg(canvas);
+    }else{
+      var blob=await window.bgRemove(bgrFile);
+      var img=new Image();
+      img.onload=function(){
+        var canvas=document.createElement('canvas');
+        canvas.width=img.width;canvas.height=img.height;
+        canvas.getContext('2d').drawImage(img,0,0);
+        applyBgrBg(canvas);
+      };
+      img.src=URL.createObjectURL(blob);
+    }
+  }catch(e){
+    stEl.textContent='处理失败: '+e.message;
+    showToast('❌ 背景移除失败',3000,'error');
+  }
+  hideProgress();
+  btn.disabled=false;btn.textContent='✂️ 移除背景';
+}
+function applyBgrBg(canvas){
+  var bgOpt=document.getElementById('bgr-bg').value;
+  if(bgOpt!=='transparent'){
+    var bgCanvas=document.createElement('canvas');
+    bgCanvas.width=canvas.width;bgCanvas.height=canvas.height;
+    var bgCtx=bgCanvas.getContext('2d');
+    if(bgOpt==='white')bgCtx.fillStyle='#ffffff';
+    else if(bgOpt==='blue')bgCtx.fillStyle='#438edb';
+    else if(bgOpt==='red')bgCtx.fillStyle='#d83c3e';
+    else if(bgOpt==='custom')bgCtx.fillStyle=document.getElementById('bgr-custom').value;
+    bgCtx.fillRect(0,0,bgCanvas.width,bgCanvas.height);
+    bgCtx.drawImage(canvas,0,0);
+    canvas=bgCanvas;
+  }
+  var url=canvas.toDataURL('image/png');
+  var stEl=document.getElementById('bgr-st');
+  var resEl=document.getElementById('bgr-res');
+  stEl.textContent='✅ 背景移除完成';
+  resEl.innerHTML='<img src="'+url+'" style="max-width:100%;border-radius:10px;border:1px solid var(--border)"><br><a href="'+url+'" download="no-bg-'+bgrFile.name.replace(/\.[^.]+$/,'.png')+'"><button class="btn bo bs" style="margin-top:8px">💾 下载 PNG</button></a>';
+  hideProgress();
+}
+
+// ===== 证件照制作 =====
+var idpFile=null;
+setupDz('idp-dz','idp-f',function(f){idpFile=f[0];if(!checkFileSize(idpFile,20))return;showPv(f,'idp-pv')});
+async function idpGo(){
+  if(!idpFile){showToast('请先选择照片');return}
+  var btn=document.getElementById('idp-btn');
+  var stEl=document.getElementById('idp-st');
+  var resEl=document.getElementById('idp-res');
+  btn.disabled=true;btn.textContent='⏳ 处理中...';
+  stEl.textContent='正在处理...';
+  showProgressIndeterminate();
+  try{
+    var sizeMap={'1x':[25,35],'2x':[35,49],'small1x':[22,32],'passport':[33,48],'visa':[35,45]};
+    var bgMap={'white':'#ffffff','blue':'#438edb','red':'#d83c3e'};
+    var sizeKey=document.getElementById('idp-size').value;
+    var bgKey=document.getElementById('idp-bg').value;
+    var mmW=sizeMap[sizeKey][0],mmH=sizeMap[sizeKey][1];
+    // 300 DPI: 1mm = 11.811 pixels
+    var pxW=Math.round(mmW*11.811),pxH=Math.round(mmH*11.811);
+    var img=await loadImg(idpFile);
+    // Create photo with proper aspect ratio
+    var canvas=document.createElement('canvas');
+    canvas.width=pxW;canvas.height=pxH;
+    var ctx=canvas.getContext('2d');
+    // Fill background
+    ctx.fillStyle=bgMap[bgKey];
+    ctx.fillRect(0,0,pxW,pxH);
+    // Draw image centered and cropped to fit
+    var imgRatio=img.width/img.height;
+    var targetRatio=pxW/pxH;
+    var sx=0,sy=0,sw=img.width,sh=img.height;
+    if(imgRatio>targetRatio){
+      sw=img.height*targetRatio;
+      sx=(img.width-sw)/2;
+    }else{
+      sh=img.width/targetRatio;
+      sy=(img.height-sh)/2;
+    }
+    ctx.drawImage(img,sx,sy,sw,sh,0,0,pxW,pxH);
+    // Create print layout (4x6 inch, multiple photos)
+    var layoutCanvas=document.createElement('canvas');
+    var printW=4*300,printH=6*300;
+    layoutCanvas.width=printW;layoutCanvas.height=printH;
+    var lctx=layoutCanvas.getContext('2d');
+    lctx.fillStyle='#ffffff';
+    lctx.fillRect(0,0,printW,printH);
+    var gap=20;
+    var cols=Math.floor((printW+gap)/(pxW+gap));
+    var rows=Math.floor((printH+gap)/(pxH+gap));
+    var startX=Math.floor((printW-cols*(pxW+gap)+gap)/2);
+    var startY=Math.floor((printH-rows*(pxH+gap)+gap)/2);
+    for(var r=0;r<rows;r++){
+      for(var c=0;c<cols;c++){
+        lctx.drawImage(canvas,startX+c*(pxW+gap),startY+r*(pxH+gap));
+      }
+    }
+    stEl.textContent='✅ 生成完成！单张: '+mmW+'×'+mmH+'mm ('+pxW+'×'+pxH+'px @300DPI)';
+    var singleUrl=canvas.toDataURL('image/png');
+    var layoutUrl=layoutCanvas.toDataURL('image/jpeg',0.95);
+    resEl.innerHTML='<div style="display:flex;gap:14px;flex-wrap:wrap"><div style="text-align:center"><div style="font-size:.78rem;color:var(--dim);margin-bottom:6px">单张证件照</div><img src="'+singleUrl+'" style="max-height:200px;border-radius:8px;border:1px solid var(--border)"><br><a href="'+singleUrl+'" download="id-photo-'+sizeKey+'.png"><button class="btn bo bs" style="margin-top:6px">💾 下载单张</button></a></div><div style="text-align:center"><div style="font-size:.78rem;color:var(--dim);margin-bottom:6px">排版打印 ('+cols+'×'+rows+'张)</div><img src="'+layoutUrl+'" style="max-height:200px;border-radius:8px;border:1px solid var(--border)"><br><a href="'+layoutUrl+'" download="id-photo-print-'+sizeKey+'.jpg"><button class="btn bo bs" style="margin-top:6px">💾 下载排版</button></a></div></div>';
+  }catch(e){
+    stEl.textContent='处理失败: '+e.message;
+    showToast('❌ 证件照生成失败',3000,'error');
+  }
+  hideProgress();
+  btn.disabled=false;btn.textContent='📷 生成证件照';
 }
 
 // ===== 密码生成器 =====
