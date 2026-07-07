@@ -829,17 +829,22 @@ console.log('Hi');
     <!-- 磁盘清理 -->
     <div class="tp" id="p-diskclean">
       <div class="sec">
-        <div class="st">🧹 磁盘清理</div>
+        <div class="st">🧹 浏览器缓存清理</div>
         <div style="line-height:1.8;font-size:.9rem">
-          <p>Windows 自带磁盘清理工具，可清除临时文件、回收站、缩略图缓存等。</p>
-          <div style="margin:14px 0;padding:14px;background:rgba(108,99,255,.08);border-radius:10px;border-left:3px solid var(--accent)">
-            <div style="font-weight:600;margin-bottom:8px">📋 操作步骤：</div>
-            <div>1. 按 <code style="background:var(--tag-bg);padding:2px 6px;border-radius:4px">Win + R</code> 打开运行窗口</div>
-            <div>2. 输入 <code style="background:var(--tag-bg);padding:2px 6px;border-radius:4px">cleanmgr</code> 回车</div>
-            <div>3. 选择 C: 盘 → 确定</div>
-            <div>4. 勾选要清理的项目 → 点「清理系统文件」可清理更多</div>
+          <p>清理当前网站的浏览器缓存数据，包括本地存储、缓存文件、Service Worker 等。</p>
+          <div style="margin:14px 0" id="cacheInfo">
+            <button class="btn bp" onclick="scanCache()">🔍 扫描缓存</button>
           </div>
-          <p style="color:var(--dim)">💡 通常能清出 1-5GB 空间</p>
+          <div id="cacheResult"></div>
+        </div>
+      </div>
+      <div class="sec">
+        <div class="st">💻 Windows 磁盘清理</div>
+        <div style="line-height:1.8;font-size:.85rem">
+          <div style="padding:12px;background:rgba(108,99,255,.08);border-radius:10px;border-left:3px solid var(--accent)">
+            <div>1. 按 <code style="background:var(--tag-bg);padding:2px 6px;border-radius:4px">Win + R</code> → 输入 <code style="background:var(--tag-bg);padding:2px 6px;border-radius:4px">cleanmgr</code></div>
+            <div>2. 选择 C: 盘 → 勾选要清理的项目 → 确定</div>
+          </div>
         </div>
       </div>
     </div>
@@ -2706,17 +2711,73 @@ async function clearTraces(){
   }catch(e){alert('清除完成（部分功能可能需要手动清除）')}
 }
 
+// ===== 浏览器缓存清理 =====
+async function scanCache(){
+  var el=document.getElementById('cacheResult');
+  el.innerHTML='<span style="color:var(--dim)">扫描中...</span>';
+  var html='<div style="margin-top:10px">';
+  try{
+    var lsSize=0;
+    for(var key in localStorage){if(localStorage.hasOwnProperty(key))lsSize+=localStorage[key].length*2}
+    html+='<div style="display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid var(--border)"><span>📦 localStorage</span><span>'+(lsSize/1024).toFixed(1)+'KB</span></div>';
+    var ssSize=0;
+    for(var key in sessionStorage){if(sessionStorage.hasOwnProperty(key))ssSize+=sessionStorage[key].length*2}
+    html+='<div style="display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid var(--border)"><span>📦 sessionStorage</span><span>'+(ssSize/1024).toFixed(1)+'KB</span></div>';
+    if('caches' in window){
+      var cacheNames=await caches.keys();
+      var cacheSize=0;
+      for(var i=0;i<cacheNames.length;i++){var cache=await caches.open(cacheNames[i]);var keys=await cache.keys();cacheSize+=keys.length}
+      html+='<div style="display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid var(--border)"><span>💾 Cache API</span><span>'+cacheNames.length+' 个缓存, '+cacheSize+' 条</span></div>';
+    }
+    if('serviceWorker' in navigator){
+      var regs=await navigator.serviceWorker.getRegistrations();
+      html+='<div style="display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid var(--border)"><span>⚙️ Service Worker</span><span>'+regs.length+' 个</span></div>';
+    }
+  }catch(e){html+='<div style="color:var(--red)">扫描出错: '+e.message+'</div>'}
+  html+='</div>';
+  html+='<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">';
+  html+='<button class="btn bp" onclick="clearBrowserCache()">🗑️ 清理全部缓存</button>';
+  html+='<button class="btn bo" onclick="clearLsOnly()">清理 localStorage</button>';
+  html+='</div>';
+  el.innerHTML=html;
+}
+async function clearBrowserCache(){
+  if(!confirm('确定清理所有浏览器缓存？'))return;
+  try{
+    localStorage.clear();sessionStorage.clear();
+    var keys=await caches.keys();
+    for(var i=0;i<keys.length;i++)await caches.delete(keys[i]);
+    if('serviceWorker' in navigator){var regs=await navigator.serviceWorker.getRegistrations();for(var i=0;i<regs.length;i++)await regs[i].unregister()}
+    showToast('✅ 缓存已清理完成',3000,'success');
+    scanCache();
+  }catch(e){showToast('清理出错: '+e.message,3000,'error')}
+}
+function clearLsOnly(){
+  if(!confirm('确定清理 localStorage？'))return;
+  localStorage.clear();
+  showToast('✅ localStorage 已清理',2000,'success');
+  scanCache();
+}
+
 // ===== 隐私声明 =====
 function showPrivacy(){
-  var msg='🔒 隐私声明\n\n'+
-    '本工具箱所有功能均在您的浏览器本地运行，\n'+
-    '不会向任何服务器发送您的文件或数据。\n\n'+
-    '• 文件转换、图片处理、音视频处理 → 全部在本地完成\n'+
-    '• 不收集、不存储、不传输任何个人信息\n'+
-    '• 本地存储（localStorage）仅保存您的偏好设置和使用统计\n'+
-    '• 第三方 CDN 仅用于加载开源工具库，不追踪用户行为\n\n'+
-    '如有疑问，欢迎反馈。';
-  alert(msg);
+  var w=window.open('','','width=600,height=500');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>隐私声明</title><style>body{font-family:system-ui;max-width:560px;margin:40px auto;padding:0 20px;line-height:1.8;color:#333}h2{color:#6c63ff}li{margin:6px 0}.footer{margin-top:30px;padding-top:16px;border-top:1px solid #eee;font-size:.82rem;color:#888}</style></head><body>');
+  w.document.write('<h2>🔒 隐私声明</h2>');
+  w.document.write('<p><b>体院办公工具箱</b>承诺保护用户隐私：</p>');
+  w.document.write('<h3>数据处理</h3><ul>');
+  w.document.write('<li>所有文件转换、图片处理、音视频处理均在<b>您的浏览器本地完成</b></li>');
+  w.document.write('<li>不会向任何服务器上传、发送或存储您的文件或数据</li>');
+  w.document.write('<li>不会收集任何个人信息</li></ul>');
+  w.document.write('<h3>本地存储</h3><ul>');
+  w.document.write('<li>localStorage 仅用于保存偏好设置（主题、收藏等）</li>');
+  w.document.write('<li>所有数据保存在您的设备上，可随时清除</li></ul>');
+  w.document.write('<h3>第三方服务</h3><ul>');
+  w.document.write('<li>通过 CDN 加载开源库</li>');
+  w.document.write('<li>不使用任何追踪器、广告或分析服务</li></ul>');
+  w.document.write('<div class="footer">最后更新：2025年7月</div>');
+  w.document.write('</body></html>');
+  w.document.close();
 }
 
 // ===== 全局错误边界 =====
