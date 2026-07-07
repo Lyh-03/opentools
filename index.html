@@ -947,6 +947,7 @@ console.log('Hi');
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js" defer></script>
@@ -1066,11 +1067,46 @@ function showPv(files,elId){
 }
 function loadImg(f){return new Promise(function(r){var img=new Image();img.onload=function(){r(img)};img.src=URL.createObjectURL(f)})}
 
+// ===== 输入自动保存/恢复 =====
+(function(){
+  var SAVE_KEY='toolbox_inputs';
+  var saveTimer=null;
+  function saveInputs(){
+    var data={};
+    document.querySelectorAll('textarea[id], input[type="text"][id]').forEach(function(el){
+      if(el.value&&el.id)data[el.id]=el.value;
+    });
+    try{localStorage.setItem(SAVE_KEY,JSON.stringify(data))}catch(e){}
+  }
+  function restoreInputs(){
+    try{
+      var data=JSON.parse(localStorage.getItem(SAVE_KEY)||'{}');
+      Object.keys(data).forEach(function(id){
+        var el=document.getElementById(id);
+        if(el&&data[id])el.value=data[id];
+      });
+    }catch(e){}
+  }
+  // Debounced save on input
+  document.addEventListener('input',function(e){
+    if(e.target.tagName==='TEXTAREA'||(e.target.tagName==='INPUT'&&e.target.type==='text')){
+      clearTimeout(saveTimer);
+      saveTimer=setTimeout(saveInputs,1000);
+    }
+  });
+  // Restore on page load
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',restoreInputs);
+  }else{
+    restoreInputs();
+  }
+})();
+
 // ===== Image Convert =====
 var icFiles=[];
-setupDz('ic-dz','ic-f',function(f){icFiles=Array.from(f);showPv(f,'ic-pv')});
-function icGo(){
-  if(!icFiles.length){alert('请先选图');return}
+setupDz('ic-dz','ic-f',function(f){icFiles=Array.from(f);if(icFiles.some(function(x){return !checkFileSize(x,30)}))return;showPv(f,'ic-pv')});
+function icGo(){safeRun(function(){
+  if(!icFiles.length){showToast('请先选图');return}
   var fmt=document.getElementById('ic-fmt').value;
   var q=parseInt(document.getElementById('ic-q').value)/100;
   var ext=fmt.split('/')[1]==='jpeg'?'jpg':fmt.split('/')[1];
@@ -1085,15 +1121,15 @@ function icGo(){
         var a=document.createElement('a');a.href=url;
         a.download=f.name.replace(/\.[^.]+$/,'.'+ext);a.click();
         setTimeout(function(){URL.revokeObjectURL(url)},1000);
-        count++;if(count===icFiles.length)alert('✅ 转换完成，共 '+count+' 个文件');
+        count++;if(count===icFiles.length)showToast('✅ 转换完成，共 '+count+' 个文件');
       },fmt,q);
     };img.src=URL.createObjectURL(f);
   });
-}
+},'ic-res');}
 
 // ===== PDF =====
 var pdfFiles=[];
-setupDz('pdf-dz','pdf-f',function(f){pdfFiles=Array.from(f);showPv(f,'pdf-pv')});
+setupDz('pdf-dz','pdf-f',function(f){pdfFiles=Array.from(f);if(pdfFiles.some(function(x){return !checkFileSize(x,30)}))return;showPv(f,'pdf-pv')});
 async function pdfGo(){
   if(!pdfFiles.length){alert('请先选图');return}
   if(typeof window.jspdf==='undefined'){
@@ -1129,12 +1165,11 @@ async function pdfGo(){
 // ===== Markdown =====
 function mdRender(){
   var src=document.getElementById('md-in').value;
-  var html='';
+  var rawHtml='';
   if(typeof marked!=='undefined'){
-    html=marked.parse(src);
+    rawHtml=marked.parse(src);
   }else{
-    // Fallback if marked.js not loaded
-    html=src
+    rawHtml=src
       .replace(/^### (.+)$/gm,'<h3>$1</h3>')
       .replace(/^## (.+)$/gm,'<h2>$1</h2>')
       .replace(/^# (.+)$/gm,'<h1>$1</h1>')
@@ -1144,6 +1179,13 @@ function mdRender(){
       .replace(/```(\w*)\n([\s\S]*?)```/g,'<pre><code>$2</code></pre>')
       .replace(/^- (.+)$/gm,'<li>$1</li>')
       .replace(/\n/g,'<br>');
+  }
+  // XSS 防护：使用 DOMPurify 净化 HTML
+  var html=rawHtml;
+  if(typeof DOMPurify!=='undefined'){
+    html=DOMPurify.sanitize(rawHtml,{ADD_TAGS:['img'],ADD_ATTR:['src','alt','title','width','height','loading']});
+  }else if(typeof window.DOMPurify!=='undefined'){
+    html=window.DOMPurify.sanitize(rawHtml);
   }
   document.getElementById('md-out').innerHTML=html;
   return '<!DOCTYPE html><html><head><meta charset="utf-8"><title>MD Export</title><style>body{font-family:system-ui;max-width:800px;margin:40px auto;padding:0 20px;line-height:1.7}code{background:#f4f4f4;padding:2px 6px;border-radius:4px}pre{background:#f4f4f4;padding:16px;border-radius:8px}</style></head><body>'+html+'</body></html>';
@@ -1194,7 +1236,7 @@ function makeDocx(content,isHtml){
   zip.file('_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
   zip.file('word/_rels/document.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>');
   zip.file('word/document.xml',xml);
-  zip.generateAsync({type:'blob'}).then(function(blob){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='output.docx';a.click()});
+  zip.generateAsync({type:'blob'}).then(function(blob){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=isHtml?'document.docx':'text.docx';a.click()});
 }
 function txtToWord2(){var t=document.getElementById('t2w-in').value;if(!t.trim()){alert('请输入内容');return}makeDocx(t,false)}
 function htmlToWord2(){var h=document.getElementById('h2w-in').value;if(!h.trim()){alert('请输入 HTML');return}makeDocx(h,true)}
@@ -1230,21 +1272,21 @@ function csvToXls2(inputId){
     var wb=XLSX.read(csv,{type:'string'});
     var wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
     var blob=new Blob([wbout],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-    var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='output.xlsx';a.click();
-  }catch(e){alert('转换失败: '+e.message)}
+    var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='csv_data.xlsx';a.click();
+  }catch(e){showToast('转换失败: '+e.message)}
 }
 function jsonToXls2(inputId){
   if(!checkCDN(['xlsx']))return;
   var json=document.getElementById(inputId).value.trim();
-  if(!json){alert('请输入 JSON');return}
+  if(!json){showToast('请输入 JSON');return}
   try{
-    if(typeof XLSX==='undefined'){alert('Excel 库加载中');return}
+    if(typeof XLSX==='undefined'){showToast('Excel 库加载中');return}
     var data=JSON.parse(json);if(!Array.isArray(data))data=[data];
     var ws=XLSX.utils.json_to_sheet(data);
     var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Sheet1');
     var wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
     var blob=new Blob([wbout],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-    var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='output.xlsx';a.click();
+    var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='json_data.xlsx';a.click();
   }catch(e){alert('转换失败: '+e.message)}
 }
 function parseCSVLine(line){
@@ -1327,15 +1369,15 @@ function txt2pdf(){
     var maxW=pageW-margin*2;
     var lines=doc.splitTextToSize(text,maxW/(fontSizePt*0.3528));
     doc.text(lines,margin,margin+fontSizePt*0.3528);
-    doc.save('text.pdf');
+    doc.save('文本转PDF.pdf');
   }catch(e){alert('PDF 生成失败: '+e.message)}
 }
 
 // ===== Image to Base64 =====
 var i2bFile=null;
 setupDz('i2b-dz','i2b-f',function(f){i2bFile=f[0];showPv(f,'i2b-pv')});
-function img2base(){
-  if(!i2bFile){alert('请先选图');return}
+function img2base(){safeRun(function(){
+  if(!i2bFile){showToast('请先选图');return}
   var fmt=document.getElementById('i2b-fmt').value;
   var reader=new FileReader();
   reader.onload=function(){
@@ -1346,13 +1388,13 @@ function img2base(){
     var btn=document.createElement('button');btn.className='btn bo bs';btn.style.marginTop='8px';btn.textContent='复制';btn.onclick=function(){navigator.clipboard.writeText(result);showToast('✅ 已复制到剪贴板')};el.appendChild(btn);
   };
   reader.readAsDataURL(i2bFile);
-}
+},'i2b-res');}
 
 // ===== Image to ICO =====
 var i2iFile=null;
 setupDz('i2i-dz','i2i-f',function(f){i2iFile=f[0];showPv(f,'i2i-pv')});
-function img2ico(){
-  if(!i2iFile){alert('请先选图');return}
+function img2ico(){safeRun(function(){
+  if(!i2iFile){showToast('请先选图');return}
   var sz=parseInt(document.getElementById('i2i-sz').value);
   var img=new Image();img.onload=function(){
     var c=document.createElement('canvas');c.width=sz;c.height=sz;
@@ -1383,13 +1425,13 @@ function img2ico(){
       });
     },'image/png');
   };img.src=URL.createObjectURL(i2iFile);
-}
+},'i2i-res');}
 
 // ===== Image Merge =====
 var mgFiles=[];
 setupDz('mg-dz','mg-f',function(f){mgFiles=Array.from(f);showPv(f,'mg-pv')});
-async function imgMerge(){
-  if(mgFiles.length<2){alert('请至少选2张图');return}
+async function imgMerge(){safeRun(async function(){
+  if(mgFiles.length<2){showToast('请至少选2张图');return}
   var dir=document.getElementById('mg-dir').value;
   var gap=parseInt(document.getElementById('mg-gap').value);
   var bg=document.getElementById('mg-bg').value;
@@ -1410,12 +1452,12 @@ async function imgMerge(){
     else{ctx.drawImage(img,x,(maxH-img.height)/2);x+=img.width+gap}
   });
   c.toBlob(function(blob){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='merged.png';a.click()});
-}
+},'mg-res');}
 
 // ===== Text to Image =====
-function txt2img(){
+function txt2img(){safeRun(function(){
   var text=document.getElementById('t2i-in').value;
-  if(!text.trim()){alert('请输入文字');return}
+  if(!text.trim()){showToast('请输入文字');return}
   var size=parseInt(document.getElementById('t2i-size').value);
   var color=document.getElementById('t2i-color').value;
   var bg=document.getElementById('t2i-bg').value;
@@ -1437,13 +1479,13 @@ function txt2img(){
     var el=document.getElementById('t2i-res');el.innerHTML='';el.appendChild(canvas);
     canvas.style.cssText='max-width:100%;border-radius:10px;border:1px solid var(--border)';
   });
-}
+},'t2i-res');}
 
 // ===== Compress =====
 var cmpFiles=[];
-setupDz('cmp-dz','cmp-f',function(f){cmpFiles=Array.from(f);showPv(f,'cmp-pv')});
-function cmpGo(){
-  if(!cmpFiles.length){alert('请先选图');return}
+setupDz('cmp-dz','cmp-f',function(f){cmpFiles=Array.from(f);if(cmpFiles.some(function(x){return !checkFileSize(x,30)}))return;showPv(f,'cmp-pv')});
+function cmpGo(){safeRun(function(){
+  if(!cmpFiles.length){showToast('请先选图');return}
   var q=parseInt(document.getElementById('cmp-q').value)/100;
   var fmt=document.getElementById('cmp-fmt').value;
   var ext=fmt.split('/')[1]==='jpeg'?'jpg':'webp';
@@ -1464,13 +1506,13 @@ function cmpGo(){
       },fmt,q);
     };img.src=URL.createObjectURL(f);
   });
-}
+},'cmp-res');}
 
 // ===== Resize =====
 var rszFile=null;
-setupDz('rsz-dz','rsz-f',function(f){rszFile=f[0];showPv(f,'rsz-pv')});
-function rszGo(){
-  if(!rszFile){alert('请先选图');return}
+setupDz('rsz-dz','rsz-f',function(f){rszFile=f[0];if(!checkFileSize(rszFile,30))return;showPv(f,'rsz-pv')});
+function rszGo(){safeRun(function(){
+  if(!rszFile){showToast('请先选图');return}
   var w=parseInt(document.getElementById('rsz-w').value);
   var h=parseInt(document.getElementById('rsz-h').value);
   var ratio=document.getElementById('rsz-r').value==='1';
@@ -1481,13 +1523,13 @@ function rszGo(){
     c.getContext('2d').drawImage(img,0,0,c.width,c.height);
     c.toBlob(function(blob){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='resized_'+rszFile.name;a.click()},rszFile.type);
   };img.src=URL.createObjectURL(rszFile);
-}
+},'rsz-res');}
 
 // ===== Watermark =====
 var wmFile=null;
-setupDz('wm-dz','wm-f',function(f){wmFile=f[0];showPv(f,'wm-pv')});
-function wmGo(){
-  if(!wmFile){alert('请先选图');return}
+setupDz('wm-dz','wm-f',function(f){wmFile=f[0];if(!checkFileSize(wmFile,30))return;showPv(f,'wm-pv')});
+function wmGo(){safeRun(function(){
+  if(!wmFile){showToast('请先选图');return}
   var text=document.getElementById('wm-t').value;
   var size=parseInt(document.getElementById('wm-s').value);
   var opacity=parseInt(document.getElementById('wm-o').value)/100;
@@ -1507,7 +1549,7 @@ function wmGo(){
     }
     c.toBlob(function(blob){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='watermarked_'+wmFile.name;a.click()},wmFile.type);
   };img.src=URL.createObjectURL(wmFile);
-}
+},'wm-res');}
 
 // ===== Color Picker =====
 function cpUpd(){
@@ -1930,11 +1972,31 @@ async function vframeGo(){
 }
 
 
+// ===== 全局工具执行包装器 =====
+function safeRun(fn, errorId){
+  try{
+    var result=fn();
+    if(result&&typeof result.catch==='function'){
+      result.catch(function(e){
+        console.error('Tool async error:',e);
+        showToast('❌ 操作失败: '+(e.message||'未知错误'),3000);
+        if(errorId){var el=document.getElementById(errorId);if(el)el.innerHTML='<span class="err">❌ 错误: '+esc(e.message||'未知错误')+'</span>'}
+      });
+    }
+  }catch(e){
+    console.error('Tool error:',e);
+    showToast('❌ 操作失败: '+(e.message||'未知错误'),3000);
+    if(errorId){var el=document.getElementById(errorId);if(el)el.innerHTML='<span class="err">❌ 错误: '+esc(e.message||'未知错误')+'</span>'}
+  }
+}
 // ===== 文件大小检查 =====
 function checkFileSize(file,maxMB){
   if(file.size>maxMB*1024*1024){
-    alert('⚠️ 文件过大（'+(file.size/1024/1024).toFixed(1)+'MB），超过'+maxMB+'MB限制，浏览器可能卡死');
+    showToast('⚠️ 文件过大（'+(file.size/1024/1024).toFixed(1)+'MB），超过'+maxMB+'MB限制，浏览器可能卡死',4000);
     return false;
+  }
+  if(file.size>50*1024*1024){
+    showToast('⚠️ 文件较大（'+(file.size/1024/1024).toFixed(1)+'MB），处理可能需要较长时间',3000);
   }
   return true;
 }
@@ -2132,7 +2194,7 @@ window.addEventListener('unhandledrejection',function(e){
 });
 
 // ===== Service Worker =====
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').then(function(r){console.log('SW registered, will self-destruct')})}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').then(function(r){console.log('SW registered for offline support')}).catch(function(e){console.log('SW registration failed:',e)})}
 </script>
 
 <div class="footer-bar" style="position:fixed;bottom:0;left:0;right:0;text-align:center;padding:8px 20px;font-size:0.72rem;color:rgba(136,136,160,0.5);line-height:1.6;background:rgba(15,15,19,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:50;border-top:1px solid rgba(42,42,61,0.2)">
