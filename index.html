@@ -207,6 +207,11 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{border-color:var
     <div class="nav-l">文件转换</div>
     <div class="ni on" data-t="imgcv"><span class="ic">🖼️</span>图片格式转换</div>
     <div class="ni" data-t="pdf"><span class="ic">📄</span>图片转 PDF</div>
+    <div class="ni" data-t="pdfmerge"><span class="ic">📑</span>PDF 合并</div>
+    <div class="ni" data-t="pdfsplit"><span class="ic">✂️</span>PDF 拆分</div>
+    <div class="ni" data-t="pdfcompress"><span class="ic">📦</span>PDF 压缩</div>
+    <div class="ni" data-t="pdf2img"><span class="ic">🖼️</span>PDF 转图片</div>
+    <div class="ni" data-t="pdftext"><span class="ic">📝</span>PDF 提取文字</div>
     <div class="ni" data-t="word2html"><span class="ic">📘</span>Word 转 HTML</div>
     <div class="ni" data-t="word2txt"><span class="ic">📘</span>Word 转文本</div>
     <div class="ni" data-t="word2md"><span class="ic">📘</span>Word 转 Markdown</div>
@@ -346,6 +351,76 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{border-color:var
         <input type="file" id="pdf-f" accept="image/*" multiple hidden>
         <div class="img-row" id="pdf-pv"></div>
         <button class="btn bp" style="margin-top:12px" onclick="pdfGo()">📄 生成 PDF</button>
+      </div>
+    </div>
+
+    <!-- PDF 合并 -->
+    <div class="tp" id="p-pdfmerge">
+      <div class="sec">
+        <div class="st">📑 PDF 合并</div>
+        <div class="dz" id="pdfm-dz"><div class="big">📑</div><p>选择多个 PDF 文件合并成一个</p></div>
+        <input type="file" id="pdfm-f" accept=".pdf" multiple hidden>
+        <div id="pdfm-lst" style="margin-top:8px;font-size:.82rem"></div>
+        <button class="btn bp" style="margin-top:12px" id="pdfm-btn" onclick="pdfMergeGo()">📑 合并下载</button>
+        <div id="pdfm-st" style="font-size:.78rem;color:var(--dim);margin-top:6px"></div>
+      </div>
+    </div>
+
+    <!-- PDF 拆分 -->
+    <div class="tp" id="p-pdfsplit">
+      <div class="sec">
+        <div class="st">✂️ PDF 拆分</div>
+        <div class="dz" id="pdfs-dz"><div class="big">✂️</div><p>选择 PDF 文件拆分</p></div>
+        <input type="file" id="pdfs-f" accept=".pdf" hidden>
+        <div id="pdfs-info" style="margin-top:8px;font-size:.82rem"></div>
+        <div class="row" style="margin-top:10px">
+          <div><label>开始页</label><input type="number" id="pdfs-from" value="1" min="1"></div>
+          <div><label>结束页</label><input type="number" id="pdfs-to" value="1" min="1"></div>
+        </div>
+        <button class="btn bp" style="margin-top:12px" id="pdfs-btn" onclick="pdfSplitGo()">✂️ 拆分下载</button>
+        <div id="pdfs-st" style="font-size:.78rem;color:var(--dim);margin-top:6px"></div>
+      </div>
+    </div>
+
+    <!-- PDF 压缩 -->
+    <div class="tp" id="p-pdfcompress">
+      <div class="sec">
+        <div class="st">📦 PDF 压缩</div>
+        <div class="dz" id="pdfc-dz"><div class="big">📦</div><p>选择 PDF 文件压缩</p></div>
+        <input type="file" id="pdfc-f" accept=".pdf" hidden>
+        <div id="pdfc-info" style="margin-top:8px;font-size:.82rem"></div>
+        <button class="btn bp" style="margin-top:12px" id="pdfc-btn" onclick="pdfCompressGo()">📦 压缩下载</button>
+        <div id="pdfc-st" style="font-size:.78rem;color:var(--dim);margin-top:6px"></div>
+      </div>
+    </div>
+
+    <!-- PDF 转图片 -->
+    <div class="tp" id="p-pdf2img">
+      <div class="sec">
+        <div class="st">🖼️ PDF 转图片</div>
+        <div class="dz" id="pdf2i-dz"><div class="big">🖼️</div><p>选择 PDF 文件转为图片</p></div>
+        <input type="file" id="pdf2i-f" accept=".pdf" hidden>
+        <div id="pdf2i-info" style="margin-top:8px;font-size:.82rem"></div>
+        <div class="row" style="margin-top:10px">
+          <div><label>输出格式</label><select id="pdf2i-fmt"><option value="png">PNG</option><option value="jpeg">JPEG</option></select></div>
+          <div><label>分辨率</label><select id="pdf2i-dpi"><option value="150">150 DPI</option><option value="2" selected>2x (推荐)</option><option value="3">3x (高清)</option></select></div>
+        </div>
+        <button class="btn bp" style="margin-top:12px" id="pdf2i-btn" onclick="pdf2imgGo()">🖼️ 转换</button>
+        <div id="pdf2i-st" style="font-size:.78rem;color:var(--dim);margin-top:6px"></div>
+        <div id="pdf2i-res" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px"></div>
+      </div>
+    </div>
+
+    <!-- PDF 提取文字 -->
+    <div class="tp" id="p-pdftext">
+      <div class="sec">
+        <div class="st">📝 PDF 提取文字</div>
+        <div class="dz" id="pdft-dz"><div class="big">📝</div><p>选择 PDF 文件提取内嵌文字</p></div>
+        <input type="file" id="pdft-f" accept=".pdf" hidden>
+        <div id="pdft-info" style="margin-top:8px;font-size:.82rem"></div>
+        <button class="btn bp" style="margin-top:12px" id="pdft-btn" onclick="pdfTextGo()">📝 提取文字</button>
+        <div id="pdft-st" style="font-size:.78rem;color:var(--dim);margin-top:6px"></div>
+        <div id="pdft-res" style="margin-top:10px"></div>
       </div>
     </div>
 
@@ -1248,10 +1323,11 @@ console.log('Hi');
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/index.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js" defer></script>
 <script>
 // ===== Navigation =====
-var titles={imgcv:'图片格式转换',pdf:'图片转 PDF',word2html:'Word 转 HTML',word2txt:'Word 转文本',word2md:'Word 转 Markdown',word2pdf:'Word 转 PDF',txt2word:'文本 转 Word',html2word:'HTML 转 Word',xls2csv:'Excel 转 CSV',xls2json:'Excel 转 JSON',xls2html:'Excel 转 HTML',xls2txt:'Excel 转文本',csv2xls:'CSV 转 Excel',json2xls:'JSON 转 Excel',md:'Markdown 编辑器',csv2json:'CSV 转 JSON',json2csv:'JSON 转 CSV',txt2pdf:'文本转 PDF',img2base:'图片转 Base64',img2ico:'图片转 ICO',imgmerge:'图片拼接',txt2img:'文字转图片',v2a:'视频提取音频',acv:'音频格式转换',vcv:'视频格式转换',vcut:'视频剪切',vframe:'视频提取帧图片',comp:'图片压缩',resize:'图片缩放',wm:'图片加水印',cp:'颜色拾取',ocr:'OCR 文字识别',qr:'二维码生成',b64:'Base64 编解码',hash:'哈希计算',jf:'JSON 格式化',re:'正则测试',diff:'文本对比',url:'URL 编解码',ts:'时间戳转换',zip:'ZIP 压缩',diskclean:'浏览器缓存清理',storesense:'存储感知',sysclean:'系统文件清理',cmdclean:'CMD 一键清理',pwd:'密码生成器',unit:'单位换算',codefmt:'代码格式化',fake:'假数据生成',pomodoro:'番茄钟',todo:'待办清单',wc:'字数统计',palette:'调色板生成',bgremove:'背景移除',idphoto:'证件照制作'};
-var descs={imgcv:'PNG/JPG/WebP/BMP 互转',pdf:'多张图片合并为 PDF',word2html:'将 .docx 转为 HTML 网页',word2txt:'将 .docx 转为纯文本',word2md:'将 .docx 转为 Markdown',word2pdf:'将 .docx 转为 PDF 打印',txt2word:'将纯文本转为 .docx',html2word:'将 HTML 转为 .docx',xls2csv:'将 Excel 转为 CSV',xls2json:'将 Excel 转为 JSON',xls2html:'将 Excel 转为 HTML 表格',xls2txt:'将 Excel 转为纯文本',csv2xls:'将 CSV 转为 .xlsx',json2xls:'将 JSON 转为 .xlsx',md:'实时预览，导出 HTML',csv2json:'将 CSV 转为 JSON',json2csv:'将 JSON 转为 CSV',txt2pdf:'输入文字生成 PDF',img2base:'图片转为 Base64',img2ico:'生成网站 favicon',imgmerge:'多张图片拼接成一张',txt2img:'把文字做成图片',v2a:'从视频中提取音频',acv:'音频格式互转',vcv:'视频格式互转',vcut:'截取视频片段',vframe:'提取帧图片',comp:'压缩图片体积(支持目标大小)',resize:'按尺寸缩放图片',wm:'添加文字水印',cp:'拾取颜色 HEX/RGB/HSL',ocr:'本地识别图片文字',qr:'生成二维码',b64:'文本与 Base64 互转',hash:'SHA-1/SHA-256',jf:'格式化或压缩 JSON',re:'正则在线测试',diff:'高亮文本差异',url:'URL 编码解码',ts:'时间戳转换',zip:'压缩文件为 ZIP',diskclean:'清理浏览器缓存',storesense:'开启自动定期清理',sysclean:'清理更新缓存和旧版本',cmdclean:'命令行快速清理临时文件',pwd:'生成随机强密码',unit:'长度/重量/温度/数据等换算',codefmt:'HTML/CSS/JS/SQL 格式化压缩',fake:'姓名/手机/邮箱/地址等',pomodoro:'25分钟专注计时',todo:'本地待办清单',wc:'中英文字符/词/行统计',palette:'互补色/三角色/类似色等方案',bgremove:'AI自动移除图片背景',idphoto:'一寸/二寸/护照/签证尺寸'};
+var titles={imgcv:'图片格式转换',pdf:'图片转 PDF',word2html:'Word 转 HTML',word2txt:'Word 转文本',word2md:'Word 转 Markdown',word2pdf:'Word 转 PDF',txt2word:'文本 转 Word',html2word:'HTML 转 Word',xls2csv:'Excel 转 CSV',xls2json:'Excel 转 JSON',xls2html:'Excel 转 HTML',xls2txt:'Excel 转文本',csv2xls:'CSV 转 Excel',json2xls:'JSON 转 Excel',md:'Markdown 编辑器',csv2json:'CSV 转 JSON',json2csv:'JSON 转 CSV',txt2pdf:'文本转 PDF',img2base:'图片转 Base64',img2ico:'图片转 ICO',imgmerge:'图片拼接',txt2img:'文字转图片',v2a:'视频提取音频',acv:'音频格式转换',vcv:'视频格式转换',vcut:'视频剪切',vframe:'视频提取帧图片',comp:'图片压缩',resize:'图片缩放',wm:'图片加水印',cp:'颜色拾取',ocr:'OCR 文字识别',qr:'二维码生成',b64:'Base64 编解码',hash:'哈希计算',jf:'JSON 格式化',re:'正则测试',diff:'文本对比',url:'URL 编解码',ts:'时间戳转换',zip:'ZIP 压缩',diskclean:'浏览器缓存清理',storesense:'存储感知',sysclean:'系统文件清理',cmdclean:'CMD 一键清理',pwd:'密码生成器',unit:'单位换算',codefmt:'代码格式化',fake:'假数据生成',pomodoro:'番茄钟',todo:'待办清单',wc:'字数统计',palette:'调色板生成',bgremove:'背景移除',idphoto:'证件照制作',pdfmerge:'PDF 合并',pdfsplit:'PDF 拆分',pdfcompress:'PDF 压缩',pdf2img:'PDF 转图片',pdftext:'PDF 提取文字'};
+var descs={imgcv:'PNG/JPG/WebP/BMP 互转',pdf:'多张图片合并为 PDF',word2html:'将 .docx 转为 HTML 网页',word2txt:'将 .docx 转为纯文本',word2md:'将 .docx 转为 Markdown',word2pdf:'将 .docx 转为 PDF 打印',txt2word:'将纯文本转为 .docx',html2word:'将 HTML 转为 .docx',xls2csv:'将 Excel 转为 CSV',xls2json:'将 Excel 转为 JSON',xls2html:'将 Excel 转为 HTML 表格',xls2txt:'将 Excel 转为纯文本',csv2xls:'将 CSV 转为 .xlsx',json2xls:'将 JSON 转为 .xlsx',md:'实时预览，导出 HTML',csv2json:'将 CSV 转为 JSON',json2csv:'将 JSON 转为 CSV',txt2pdf:'输入文字生成 PDF',img2base:'图片转为 Base64',img2ico:'生成网站 favicon',imgmerge:'多张图片拼接成一张',txt2img:'把文字做成图片',v2a:'从视频中提取音频',acv:'音频格式互转',vcv:'视频格式互转',vcut:'截取视频片段',vframe:'提取帧图片',comp:'压缩图片体积(支持目标大小)',resize:'按尺寸缩放图片',wm:'添加文字水印',cp:'拾取颜色 HEX/RGB/HSL',ocr:'本地识别图片文字',qr:'生成二维码',b64:'文本与 Base64 互转',hash:'SHA-1/SHA-256',jf:'格式化或压缩 JSON',re:'正则在线测试',diff:'高亮文本差异',url:'URL 编码解码',ts:'时间戳转换',zip:'压缩文件为 ZIP',diskclean:'清理浏览器缓存',storesense:'开启自动定期清理',sysclean:'清理更新缓存和旧版本',cmdclean:'命令行快速清理临时文件',pwd:'生成随机强密码',unit:'长度/重量/温度/数据等换算',codefmt:'HTML/CSS/JS/SQL 格式化压缩',fake:'姓名/手机/邮箱/地址等',pomodoro:'25分钟专注计时',todo:'本地待办清单',wc:'中英文字符/词/行统计',palette:'互补色/三角色/类似色等方案',bgremove:'AI自动移除图片背景',idphoto:'一寸/二寸/护照/签证尺寸',pdfmerge:'多个PDF合并为一个',pdfsplit:'按页码范围拆分PDF',pdfcompress:'减小PDF文件大小',pdf2img:'每页转成一张图片',pdftext:'提取PDF内嵌文字内容'};
 document.querySelectorAll('.ni').forEach(function(el){
   if(!el.getAttribute('tabindex'))el.setAttribute('tabindex','0');
   if(!el.getAttribute('role'))el.setAttribute('role','menuitem');
@@ -2850,7 +2926,7 @@ renderRecent();
 
 // ===== 分类筛选 =====
 var categories={
-  '文件转换':['imgcv','pdf','word2html','word2txt','word2md','word2pdf','txt2word','html2word','xls2csv','xls2json','xls2html','xls2txt','csv2xls','json2xls','md','csv2json','json2csv','txt2pdf','img2base','img2ico','imgmerge','txt2img'],
+  '文件转换':['imgcv','pdf','word2html','word2txt','word2md','word2pdf','txt2word','html2word','xls2csv','xls2json','xls2html','xls2txt','csv2xls','json2xls','md','csv2json','json2csv','txt2pdf','img2base','img2ico','imgmerge','txt2img','pdfmerge','pdfsplit','pdfcompress','pdf2img','pdftext'],
   '压缩':['zip'],
   '音视频':['v2a','acv','vcv','vcut','vframe'],
   '图片工具':['comp','resize','wm','cp','bgremove','idphoto'],
@@ -3065,6 +3141,241 @@ function showPrivacy(){
   w.document.write('<div class="footer">最后更新：2025年7月</div>');
   w.document.write('</body></html>');
   w.document.close();
+}
+
+// ===== PDF 工具 =====
+// PDF.js worker
+if(typeof pdfjsLib!=='undefined'){
+  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+}
+
+// PDF Merge
+var pdfMergeFiles=[];
+setupDz('pdfm-dz','pdfm-f',function(f){
+  pdfMergeFiles=Array.from(f).filter(function(x){return x.name.endsWith('.pdf')});
+  document.getElementById('pdfm-lst').innerHTML=pdfMergeFiles.map(function(f,i){return (i+1)+'. 📄 '+esc(f.name)+' ('+(f.size/1024).toFixed(0)+'KB)'}).join('<br>');
+});
+async function pdfMergeGo(){
+  if(pdfMergeFiles.length<2){showToast('请至少选择2个PDF文件');return}
+  if(typeof JSZip==='undefined'){showToast('⏳ 库加载中');return}
+  var btn=document.getElementById('pdfm-btn');
+  var stEl=document.getElementById('pdfm-st');
+  btn.disabled=true;btn.textContent='⏳ 合并中...';
+  showProgressIndeterminate();
+  try{
+    // Use jsPDF to merge
+    var jsPDF=window.jspdf.jsPDF;
+    var firstDoc=null;
+    for(var i=0;i<pdfMergeFiles.length;i++){
+      stEl.textContent='处理第 '+(i+1)+'/'+pdfMergeFiles.length+' 个...';
+      var arrayBuf=await pdfMergeFiles[i].arrayBuffer();
+      if(typeof pdfjsLib!=='undefined'){
+        var pdf=await pdfjsLib.getDocument({data:arrayBuf}).promise;
+        for(var p=1;p<=pdf.numPages;p++){
+          var page=await pdf.getPage(p);
+          var viewport=page.getViewport({scale:2});
+          var canvas=document.createElement('canvas');
+          canvas.width=viewport.width;canvas.height=viewport.height;
+          await page.render({canvasContext:canvas.getContext('2d'),viewport:viewport}).promise;
+          var imgData=canvas.toDataURL('image/jpeg',0.92);
+          if(!firstDoc){
+            firstDoc=new jsPDF({orientation:viewport.width>viewport.height?'landscape':'portrait',unit:'px',format:[viewport.width,viewport.height]});
+            firstDoc.addImage(imgData,'JPEG',0,0,viewport.width,viewport.height);
+          }else{
+            firstDoc.addPage([viewport.width,viewport.height],viewport.width>viewport.height?'landscape':'portrait');
+            firstDoc.addImage(imgData,'JPEG',0,0,viewport.width,viewport.height);
+          }
+        }
+      }
+    }
+    if(firstDoc){
+      firstDoc.save('merged.pdf');
+      stEl.textContent='✅ 合并完成！';
+      showToast('✅ PDF合并完成',2000,'success');
+    }else{
+      stEl.textContent='❌ 合并失败';
+    }
+  }catch(e){stEl.textContent='❌ 错误: '+e.message;showToast('合并失败',3000,'error')}
+  hideProgress();
+  btn.disabled=false;btn.textContent='📑 合并下载';
+}
+
+// PDF Split
+var pdfSplitFile=null;
+setupDz('pdfs-dz','pdfs-f',function(f){
+  pdfSplitFile=f[0];
+  document.getElementById('pdfs-info').innerHTML='<span class="ok">✓</span> '+esc(pdfSplitFile.name)+' ('+(pdfSplitFile.size/1024).toFixed(0)+'KB)';
+  if(typeof pdfjsLib!=='undefined'){
+    pdfSplitFile.arrayBuffer().then(function(buf){
+      pdfjsLib.getDocument({data:buf}).promise.then(function(pdf){
+        document.getElementById('pdfs-to').value=pdf.numPages;
+        document.getElementById('pdfs-info').innerHTML+=' — 共 '+pdf.numPages+' 页';
+      });
+    });
+  }
+});
+async function pdfSplitGo(){
+  if(!pdfSplitFile){showToast('请先选择PDF文件');return}
+  var from=parseInt(document.getElementById('pdfs-from').value)||1;
+  var to=parseInt(document.getElementById('pdfs-to').value)||1;
+  var btn=document.getElementById('pdfs-btn');
+  var stEl=document.getElementById('pdfs-st');
+  btn.disabled=true;btn.textContent='⏳ 拆分中...';
+  showProgressIndeterminate();
+  try{
+    var jsPDF=window.jspdf.jsPDF;
+    var arrayBuf=await pdfSplitFile.arrayBuffer();
+    var pdf=await pdfjsLib.getDocument({data:arrayBuf}).promise;
+    to=Math.min(to,pdf.numPages);
+    var doc=null;
+    for(var p=from;p<=to;p++){
+      stEl.textContent='处理第 '+p+' 页...';
+      showProgress(Math.round((p-from+1)/(to-from+1)*100));
+      var page=await pdf.getPage(p);
+      var viewport=page.getViewport({scale:2});
+      var canvas=document.createElement('canvas');
+      canvas.width=viewport.width;canvas.height=viewport.height;
+      await page.render({canvasContext:canvas.getContext('2d'),viewport:viewport}).promise;
+      var imgData=canvas.toDataURL('image/jpeg',0.92);
+      if(!doc){
+        doc=new jsPDF({orientation:viewport.width>viewport.height?'landscape':'portrait',unit:'px',format:[viewport.width,viewport.height]});
+        doc.addImage(imgData,'JPEG',0,0,viewport.width,viewport.height);
+      }else{
+        doc.addPage([viewport.width,viewport.height],viewport.width>viewport.height?'landscape':'portrait');
+        doc.addImage(imgData,'JPEG',0,0,viewport.width,viewport.height);
+      }
+    }
+    if(doc){
+      doc.save(pdfSplitFile.name.replace('.pdf','')+'_'+from+'-'+to+'.pdf');
+      stEl.textContent='✅ 拆分完成！第 '+from+'-'+to+' 页';
+      showToast('✅ PDF拆分完成',2000,'success');
+    }
+  }catch(e){stEl.textContent='❌ 错误: '+e.message}
+  hideProgress();
+  btn.disabled=false;btn.textContent='✂️ 拆分下载';
+}
+
+// PDF Compress
+var pdfCompressFile=null;
+setupDz('pdfc-dz','pdfc-f',function(f){
+  pdfCompressFile=f[0];
+  document.getElementById('pdfc-info').innerHTML='<span class="ok">✓</span> '+esc(pdfCompressFile.name)+' ('+(pdfCompressFile.size/1024).toFixed(0)+'KB)';
+});
+async function pdfCompressGo(){
+  if(!pdfCompressFile){showToast('请先选择PDF文件');return}
+  var btn=document.getElementById('pdfc-btn');
+  var stEl=document.getElementById('pdfc-st');
+  btn.disabled=true;btn.textContent='⏳ 压缩中...';
+  showProgressIndeterminate();
+  try{
+    var arrayBuf=await pdfCompressFile.arrayBuffer();
+    var pdf=await pdfjsLib.getDocument({data:arrayBuf}).promise;
+    var jsPDF=window.jspdf.jsPDF;
+    var doc=null;
+    for(var p=1;p<=pdf.numPages;p++){
+      stEl.textContent='处理第 '+p+'/'+pdf.numPages+' 页...';
+      showProgress(Math.round(p/pdf.numPages*100));
+      var page=await pdf.getPage(p);
+      var viewport=page.getViewport({scale:1.5}); // Lower scale for compression
+      var canvas=document.createElement('canvas');
+      canvas.width=viewport.width;canvas.height=viewport.height;
+      await page.render({canvasContext:canvas.getContext('2d'),viewport:viewport}).promise;
+      var imgData=canvas.toDataURL('image/jpeg',0.7); // Lower quality
+      if(!doc){
+        doc=new jsPDF({orientation:viewport.width>viewport.height?'landscape':'portrait',unit:'px',format:[viewport.width,viewport.height]});
+        doc.addImage(imgData,'JPEG',0,0,viewport.width,viewport.height);
+      }else{
+        doc.addPage([viewport.width,viewport.height],viewport.width>viewport.height?'landscape':'portrait');
+        doc.addImage(imgData,'JPEG',0,0,viewport.width,viewport.height);
+      }
+    }
+    if(doc){
+      doc.save(pdfCompressFile.name.replace('.pdf','')+'_compressed.pdf');
+      var origKB=(pdfCompressFile.size/1024).toFixed(0);
+      stEl.textContent='✅ 压缩完成！原始: '+origKB+'KB';
+      showToast('✅ PDF压缩完成',2000,'success');
+    }
+  }catch(e){stEl.textContent='❌ 错误: '+e.message}
+  hideProgress();
+  btn.disabled=false;btn.textContent='📦 压缩下载';
+}
+
+// PDF to Images
+var pdf2imgFile=null;
+setupDz('pdf2i-dz','pdf2i-f',function(f){
+  pdf2imgFile=f[0];
+  document.getElementById('pdf2i-info').innerHTML='<span class="ok">✓</span> '+esc(pdf2imgFile.name)+' ('+(pdf2imgFile.size/1024).toFixed(0)+'KB)';
+});
+async function pdf2imgGo(){
+  if(!pdf2imgFile){showToast('请先选择PDF文件');return}
+  var btn=document.getElementById('pdf2i-btn');
+  var stEl=document.getElementById('pdf2i-st');
+  var resEl=document.getElementById('pdf2i-res');
+  btn.disabled=true;btn.textContent='⏳ 转换中...';
+  resEl.innerHTML='';
+  showProgressIndeterminate();
+  try{
+    var fmt=document.getElementById('pdf2i-fmt').value;
+    var scale=parseFloat(document.getElementById('pdf2i-dpi').value);
+    var arrayBuf=await pdf2imgFile.arrayBuffer();
+    var pdf=await pdfjsLib.getDocument({data:arrayBuf}).promise;
+    for(var p=1;p<=pdf.numPages;p++){
+      stEl.textContent='处理第 '+p+'/'+pdf.numPages+' 页...';
+      showProgress(Math.round(p/pdf.numPages*100));
+      var page=await pdf.getPage(p);
+      var viewport=page.getViewport({scale:scale});
+      var canvas=document.createElement('canvas');
+      canvas.width=viewport.width;canvas.height=viewport.height;
+      await page.render({canvasContext:canvas.getContext('2d'),viewport:viewport}).promise;
+      var mimeType=fmt==='jpeg'?'image/jpeg':'image/png';
+      var url=canvas.toDataURL(mimeType,0.95);
+      var img=document.createElement('img');
+      img.src=url;img.style.cssText='max-height:150px;border-radius:8px;border:1px solid var(--border)';
+      img.title='第 '+p+' 页';
+      resEl.appendChild(img);
+      // Auto download
+      var a=document.createElement('a');a.href=url;
+      a.download=pdf2imgFile.name.replace('.pdf','')+'_p'+p+'.'+fmt;
+      a.click();
+    }
+    stEl.textContent='✅ 转换完成！共 '+pdf.numPages+' 页';
+    showToast('✅ PDF转图片完成',2000,'success');
+  }catch(e){stEl.textContent='❌ 错误: '+e.message}
+  hideProgress();
+  btn.disabled=false;btn.textContent='🖼️ 转换';
+}
+
+// PDF Text Extraction
+var pdftextFile=null;
+setupDz('pdft-dz','pdft-f',function(f){
+  pdftextFile=f[0];
+  document.getElementById('pdft-info').innerHTML='<span class="ok">✓</span> '+esc(pdftextFile.name)+' ('+(pdftextFile.size/1024).toFixed(0)+'KB)';
+});
+async function pdfTextGo(){
+  if(!pdftextFile){showToast('请先选择PDF文件');return}
+  var btn=document.getElementById('pdft-btn');
+  var stEl=document.getElementById('pdft-st');
+  var resEl=document.getElementById('pdft-res');
+  btn.disabled=true;btn.textContent='⏳ 提取中...';
+  showProgressIndeterminate();
+  try{
+    var arrayBuf=await pdftextFile.arrayBuffer();
+    var pdf=await pdfjsLib.getDocument({data:arrayBuf}).promise;
+    var allText='';
+    for(var p=1;p<=pdf.numPages;p++){
+      stEl.textContent='提取第 '+p+'/'+pdf.numPages+' 页...';
+      showProgress(Math.round(p/pdf.numPages*100));
+      var page=await pdf.getPage(p);
+      var textContent=await page.getTextContent();
+      var pageText=textContent.items.map(function(item){return item.str}).join(' ');
+      allText+='--- 第 '+p+' 页 ---\n'+pageText+'\n\n';
+    }
+    resEl.innerHTML='<div class="rb" style="max-height:400px;overflow:auto;white-space:pre-wrap">'+esc(allText)+'</div><button class="btn bo bs" style="margin-top:8px" onclick="navigator.clipboard.writeText(document.querySelector(\'#pdft-res .rb\').textContent);showToast(\'✅ 已复制\')">📋 复制文字</button><button class="btn bo bs" style="margin-top:8px;margin-left:6px" onclick="dlBlob(document.querySelector(\'#pdft-res .rb\').textContent,\''+pdftextFile.name.replace('.pdf','.txt')+'\',\'text/plain\')">💾 下载TXT</button>';
+    stEl.textContent='✅ 提取完成！共 '+pdf.numPages+' 页';
+    showToast('✅ 文字提取完成',2000,'success');
+  }catch(e){stEl.textContent='❌ 错误: '+e.message}
+  hideProgress();
+  btn.disabled=false;btn.textContent='📝 提取文字';
 }
 
 // ===== 智能压缩模式切换 =====
