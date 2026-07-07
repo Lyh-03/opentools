@@ -182,6 +182,9 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{border-color:var
 .toast-item.t-error{background:var(--red)}
 .toast-item.t-info{background:var(--accent)}
 .toast-item.t-warn{background:var(--orange)}
+/* JSON 树形 */
+.json-toggle:hover{color:var(--accent)!important}
+.json-block{font-family:'Courier New',monospace;font-size:.82rem}
 /* 侧边栏移动端点击外部关闭 */
 @media(max-width:768px){
   .sidebar.open~.main{pointer-events:none}
@@ -720,6 +723,19 @@ console.log('Hi');
     <div class="tp" id="p-re">
       <div class="sec">
         <div class="st">🔤 正则表达式测试</div>
+        <div style="margin-bottom:10px"><label>常用模板</label>
+          <select id="re-tpl" onchange="applyReTpl()" style="width:100%">
+            <option value="">-- 选择常用正则模板 --</option>
+            <option value="email">邮箱地址</option>
+            <option value="phone">手机号码</option>
+            <option value="url">URL 链接</option>
+            <option value="ip">IP 地址</option>
+            <option value="idcard">身份证号</option>
+            <option value="password">密码强度(8位+大小写+数字+符号)</option>
+            <option value="chinese">中文字符</option>
+            <option value="date">日期格式</option>
+          </select>
+        </div>
         <div class="row">
           <div style="flex:3"><label>正则</label><input type="text" id="re-p" placeholder="\d+"></div>
           <div style="flex:1"><label>标志</label><input type="text" id="re-f" value="g"></div>
@@ -764,6 +780,20 @@ console.log('Hi');
       <div class="sec">
         <div class="st">⏱️ 时间戳转换</div>
         <div style="margin-bottom:12px"><label>当前时间戳</label><div style="font-size:1.6rem;font-weight:700;color:var(--accent2)" id="ts-now"></div></div>
+        <div style="margin-bottom:12px"><label>时区</label>
+          <select id="ts-tz" onchange="tsUpd()" style="width:100%">
+            <option value="8">UTC+8 北京/上海/新加坡</option>
+            <option value="0">UTC+0 伦敦/都柏林</option>
+            <option value="-5">UTC-5 纽约/多伦多</option>
+            <option value="-8">UTC-8 洛杉矶/温哥华</option>
+            <option value="9">UTC+9 东京/首尔</option>
+            <option value="1">UTC+1 巴黎/柏林</option>
+            <option value="3">UTC+3 莫斯科</option>
+            <option value="5.5">UTC+5:30 新德里/孟买</option>
+            <option value="10">UTC+10 悉尼</option>
+          </select>
+        </div>
+        <div style="margin-bottom:12px;padding:10px;background:rgba(108,99,255,.06);border-radius:10px;font-size:.82rem;line-height:1.8" id="ts-world"></div>
         <div class="row">
           <div style="flex:2"><label>时间戳→日期</label><input type="text" id="ts-i" placeholder="1700000000"></div>
           <div><label>&nbsp;</label><button class="btn bp bs" onclick="tsGo1()">转换</button></div>
@@ -1565,6 +1595,9 @@ function cmpGo(){safeRun(function(){
         var a=document.createElement('a');a.href=url;a.download='compressed_'+f.name.replace(/\.[^.]+$/,'.'+ext);
         var div=document.createElement('div');div.style.marginTop='6px';
         div.innerHTML='<span class="ok">✓</span> '+esc(f.name)+': '+(f.size/1024).toFixed(0)+'KB → '+(blob.size/1024).toFixed(0)+'KB <span class="ok">(-'+saving+'%)</span> <a href="'+url+'" download="'+esc(a.download)+'">下载</a>';
+        var tools=document.createElement('span');tools.style.cssText='margin-left:8px;display:inline-flex;gap:4px';
+        tools.innerHTML='<button class="btn bo bs" style="font-size:.7rem;padding:3px 8px" onclick="sendToTool(\''+url+'\',\'img2base\')">→Base64</button><button class="btn bo bs" style="font-size:.7rem;padding:3px 8px" onclick="sendToTool(\''+url+'\',\'wm\')">→加水印</button>';
+        div.appendChild(tools);
         res.appendChild(div);a.click();
         URL.revokeObjectURL(img.src);
         setTimeout(function(){URL.revokeObjectURL(url)},3000);
@@ -1749,41 +1782,159 @@ async function ocrGo(){
   hideProgress();btn.disabled=false;btn.textContent='👁️ 开始识别';
 }
 
-// ===== JSON =====
+// ===== JSON (树形结构) =====
 function jfGo(spaces){
   try{
-    document.getElementById('jf-out').textContent=JSON.stringify(JSON.parse(document.getElementById('jf-in').value),null,spaces);
+    var val=document.getElementById('jf-in').value.trim();
+    if(!val){showToast('请输入 JSON');return}
+    var obj=JSON.parse(val);
+    var el=document.getElementById('jf-out');
+    if(spaces===0){
+      // 压缩模式
+      el.textContent=JSON.stringify(obj);
+      return;
+    }
+    // 树形结构
+    el.innerHTML='';
+    el.style.padding='12px';
+    el.appendChild(buildJsonTree(obj,0));
   }catch(e){document.getElementById('jf-out').textContent='错误: '+e.message}
 }
+function buildJsonTree(val,depth){
+  if(val===null)return createSpan('null','var(--dim)');
+  if(typeof val==='boolean')return createSpan(String(val),'var(--orange)');
+  if(typeof val==='number')return createSpan(String(val),'var(--accent2)');
+  if(typeof val==='string')return createSpan('"'+esc(val)+'"','var(--green)');
+  var container=document.createElement('span');
+  var isArray=Array.isArray(val);
+  var keys=isArray?val:Object.keys(val);
+  var len=isArray?val.length:keys.length;
+  if(len===0){container.textContent=isArray?'[]':'{}';return container}
+  var toggle=document.createElement('span');
+  toggle.textContent=isArray?'▸ [':'▸ {';
+  toggle.style.cssText='cursor:pointer;color:var(--dim);user-select:none';
+  toggle.className='json-toggle';
+  var count=document.createElement('span');
+  count.textContent=' '+len+' items ';
+  count.style.cssText='color:var(--dim);font-size:.75rem';
+  var bracketClose=document.createElement('span');
+  bracketClose.textContent=isArray?']':'}';
+  bracketClose.style.color='var(--dim)';
+  var block=document.createElement('div');
+  block.style.cssText='padding-left:20px;border-left:1px solid var(--border);margin:2px 0;display:none';
+  block.className='json-block';
+  if(isArray){
+    val.forEach(function(v,i){
+      var line=document.createElement('div');
+      var idx=document.createElement('span');
+      idx.textContent=i+': ';idx.style.color='var(--dim)';
+      line.appendChild(idx);
+      line.appendChild(buildJsonTree(v,depth+1));
+      block.appendChild(line);
+    });
+  }else{
+    Object.keys(val).forEach(function(k){
+      var line=document.createElement('div');
+      var key=document.createElement('span');
+      key.textContent='"'+k+'": ';key.style.color='var(--pink)';
+      line.appendChild(key);
+      line.appendChild(buildJsonTree(val[k],depth+1));
+      block.appendChild(line);
+    });
+  }
+  toggle.onclick=function(){
+    var open=block.style.display!=='none';
+    block.style.display=open?'none':'block';
+    toggle.textContent=open?(isArray?'▸ [':'▸ {'):(isArray?'▾ [':'▾ {');
+    count.style.display=open?'':'none';
+  };
+  container.appendChild(toggle);
+  container.appendChild(count);
+  container.appendChild(block);
+  container.appendChild(bracketClose);
+  return container;
+}
+function createSpan(text,color){
+  var s=document.createElement('span');s.textContent=text;s.style.color=color;return s;
+}
 
-// ===== Regex =====
+// ===== Regex + 模板 =====
+var reTemplates={
+  email:{p:'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}',f:'g',t:'test@example.com\nuser.name+tag@mail.co.uk\ninvalid@.com'},
+  phone:{p:'1[3-9]\\d{9}',f:'g',t:'手机号：13812345678\n无效：12345678901\n另一个：19988887777'},
+  url:{p:'https?:\\/\\/[^\\s]+',f:'g',t:'访问 https://example.com 或 http://test.org/path?q=1 查看'},
+  ip:{p:'\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b',f:'g',t:'服务器地址：192.168.1.1\n公网：8.8.8.8\n无效：999.999.999.999'},
+  idcard:{p:'[1-9]\\d{5}(?:19|20)\\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\\d|3[01])\\d{3}[\\dXx]',f:'g',t:'身份证：110101199001011234\n测试：370102198812251234'},
+  password:{p:'^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$',f:'m',t:'Test@123\nweak\nStr0ng!Pass'},
+  chinese:{p:'[\\u4e00-\\u9fa5]+',f:'g',t:'这是一段中文 Hello World 测试文本'},
+  date:{p:'\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}',f:'g',t:'日期：2024-01-15\n另一个：2024/12/31\n无效：2024-13-45'}
+};
+function applyReTpl(){
+  var key=document.getElementById('re-tpl').value;
+  if(!key)return;
+  var tpl=reTemplates[key];
+  document.getElementById('re-p').value=tpl.p;
+  document.getElementById('re-f').value=tpl.f;
+  document.getElementById('re-t').value=tpl.t;
+}
 function reGo(){
   try{
     var p=document.getElementById('re-p').value,f=document.getElementById('re-f').value,t=document.getElementById('re-t').value;
+    if(!p){showToast('请输入正则表达式');return}
     var re=new RegExp(p,f);var matches=[];var m;
-    if(f.indexOf('g')>=0){while((m=re.exec(t))!==null){matches.push({m:m[0],i:m.index});if(!m[0])break}}
-    else{m=re.exec(t);if(m)matches.push({m:m[0],i:m.index})}
+    if(f.indexOf('g')>=0){while((m=re.exec(t))!==null){matches.push({m:m[0],i:m.index,groups:m.slice(1)});if(!m[0])break}}
+    else{m=re.exec(t);if(m)matches.push({m:m[0],i:m.index,groups:m.slice(1)})}
     var html='<div class="ok">找到 '+matches.length+' 个匹配</div>';
-    matches.forEach(function(x,idx){html+='<div style="margin:3px 0"><span style="background:rgba(108,99,255,.2);padding:2px 6px;border-radius:5px;font-size:.72rem">#'+(idx+1)+'</span> 位置 '+x.i+': <code>'+esc(x.m)+'</code></div>'});
+    matches.forEach(function(x,idx){
+      html+='<div style="margin:3px 0"><span style="background:rgba(108,99,255,.2);padding:2px 6px;border-radius:5px;font-size:.72rem">#'+(idx+1)+'</span> 位置 '+x.i+': <code>'+esc(x.m)+'</code>';
+      if(x.groups.length){html+=' <span style="color:var(--dim);font-size:.72rem">捕获组: '+x.groups.map(function(g){return esc(g||'(空)')}).join(', ')+'</span>'}
+      html+='</div>';
+    });
     document.getElementById('re-res').innerHTML=html;
   }catch(e){document.getElementById('re-res').innerHTML='<div class="err">'+e.message+'</div>'}
 }
 
-// ===== Diff =====
+// ===== Diff (增强版) =====
 function dfGo(){
   var a=document.getElementById('df-a').value.split('\n');
   var b=document.getElementById('df-b').value.split('\n');
-  var html='<div class="rb" style="line-height:1.8">';
+  var html='<div class="rb" style="line-height:1.8;font-size:.82rem">';
   var mx=Math.max(a.length,b.length);
+  var stats={same:0,added:0,removed:0,modified:0};
   for(var i=0;i<mx;i++){
     var la=a[i]||'',lb=b[i]||'';
-    if(la===lb)html+='<div style="color:var(--dim)">'+esc(la)+'</div>';
-    else{
-      if(la)html+='<div style="color:var(--red);background:rgba(239,68,68,.1);padding:2px 4px;border-radius:4px">- '+esc(la)+'</div>';
-      if(lb)html+='<div style="color:var(--green);background:rgba(34,197,94,.1);padding:2px 4px;border-radius:4px">+ '+esc(lb)+'</div>';
+    if(la===lb){
+      html+='<div style="color:var(--dim)">'+esc(la)+'</div>';
+      stats.same++;
+    }else if(!la&&lb){
+      html+='<div style="background:rgba(34,197,94,.12);padding:2px 6px;border-radius:4px"><span style="color:var(--green);font-weight:600">+ </span>'+esc(lb)+'</div>';
+      stats.added++;
+    }else if(la&&!lb){
+      html+='<div style="background:rgba(239,68,68,.12);padding:2px 6px;border-radius:4px"><span style="color:var(--red);font-weight:600">- </span>'+esc(la)+'</div>';
+      stats.removed++;
+    }else{
+      // Modified line - show word-level diff
+      html+='<div style="background:rgba(245,158,11,.12);padding:2px 6px;border-radius:4px"><span style="color:var(--orange);font-weight:600">~ </span>'+highlightWordDiff(la,lb)+'</div>';
+      stats.modified++;
     }
   }
-  html+='</div>';document.getElementById('df-res').innerHTML=html;
+  html+='</div>';
+  html='<div style="margin-bottom:8px;font-size:.78rem;color:var(--dim)">相同: '+stats.same+' | 新增: <span style="color:var(--green)">'+stats.added+'</span> | 删除: <span style="color:var(--red)">'+stats.removed+'</span> | 修改: <span style="color:var(--orange)">'+stats.modified+'</span></div>';
+  document.getElementById('df-res').innerHTML=html;
+}
+function highlightWordDiff(a,b){
+  var aw=a.split(/(\s+)/),bw=b.split(/(\s+)/);
+  var result='';
+  var mx=Math.max(aw.length,bw.length);
+  for(var i=0;i<mx;i++){
+    var wa=aw[i]||'',wb=bw[i]||'';
+    if(wa===wb){result+=esc(wa)}
+    else{
+      if(wa)result+='<span style="background:rgba(239,68,68,.25);text-decoration:line-through">'+esc(wa)+'</span>';
+      if(wb)result+='<span style="background:rgba(34,197,94,.25)">'+esc(wb)+'</span>';
+    }
+  }
+  return result;
 }
 
 // ===== URL =====
@@ -1794,19 +1945,61 @@ function urlGo(m){
   }catch(e){document.getElementById('url-o').value='错误: '+e.message}
 }
 
-// ===== Timestamp =====
-function tsUpd(){document.getElementById('ts-now').textContent=Math.floor(Date.now()/1000)}
+// ===== Timestamp (增强版) =====
+function tsUpd(){
+  var tz=parseFloat(document.getElementById('ts-tz').value)||0;
+  var now=Date.now();
+  var utcMs=now-tz*3600*1000;
+  document.getElementById('ts-now').textContent=Math.floor(now/1000);
+  // 世界时钟
+  var zones=[
+    {name:'🇨🇳 北京',offset:8},{name:'🇺🇸 纽约',offset:-5},{name:'🇬🇧 伦敦',offset:0},
+    {name:'🇯🇵 东京',offset:9},{name:'🇦🇺 悉尼',offset:10},{name:'🇮🇳 新德里',offset:5.5}
+  ];
+  var html='<b style="font-size:.78rem">🌍 世界时钟</b><br>';
+  zones.forEach(function(z){
+    var t=new Date(utcMs+z.offset*3600*1000);
+    var hh=String(t.getUTCHours()).padStart(2,'0');
+    var mm=String(t.getUTCMinutes()).padStart(2,'0');
+    html+='<span style="display:inline-block;min-width:140px">'+z.name+' <b>'+hh+':'+mm+'</b></span> ';
+  });
+  document.getElementById('ts-world').innerHTML=html;
+}
 setInterval(tsUpd,1000);tsUpd();
 function tsGo1(){
   var v=document.getElementById('ts-i').value.trim();
+  if(!v){showToast('请输入时间戳');return}
   var ts=v.length<=10?parseInt(v)*1000:parseInt(v);
+  if(isNaN(ts)||ts<0){showToast('无效的时间戳');return}
+  var tz=parseFloat(document.getElementById('ts-tz').value)||0;
   var d=new Date(ts);
-  document.getElementById('ts-r1').innerHTML=isNaN(d)?'<span class="err">无效</span>':'<span class="ok">✓</span> '+d.toLocaleString('zh-CN')+' / '+d.toISOString();
+  var local=new Date(ts+tz*3600*1000);
+  var isoStr=local.toISOString().replace('Z','');
+  document.getElementById('ts-r1').innerHTML=isNaN(d)?'<span class="err">无效</span>':'<span class="ok">✓</span> '+d.toLocaleString('zh-CN')+' (本地) / '+isoStr+' (UTC+'+tz+') / '+d.toISOString();
 }
 function tsGo2(){
   var v=document.getElementById('ts-d').value;if(!v)return;
   var d=new Date(v);
   document.getElementById('ts-r2').innerHTML='<span class="ok">✓</span> 秒: <b>'+Math.floor(d.getTime()/1000)+'</b> | 毫秒: <b>'+d.getTime()+'</b>';
+}
+
+// ===== 工具联动 =====
+function sendToTool(blobUrl,toolId){
+  fetch(blobUrl).then(function(r){return r.blob()}).then(function(blob){
+    var file=new File([blob],'shared_image.png',{type:blob.type});
+    switchTool(toolId);
+    setTimeout(function(){
+      if(toolId==='img2base'){
+        i2bFile=file;showPv([file],'i2b-pv');
+      }else if(toolId==='wm'){
+        wmFile=file;showPv([file],'wm-pv');
+      }else if(toolId==='comp'){
+        cmpFiles=[file];showPv([file],'cmp-pv');
+      }else if(toolId==='imgcv'){
+        icFiles=[file];showPv([file],'ic-pv');
+      }
+    },300);
+  });
 }
 
 // ===== ZIP (真正的 ZIP 打包) =====
