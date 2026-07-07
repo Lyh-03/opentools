@@ -157,6 +157,31 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{border-color:var
 }
 /* 快捷键提示 */
 .kbd{display:inline-block;padding:2px 6px;background:var(--tag-bg);border:1px solid var(--border);border-radius:4px;font-size:.7rem;font-family:monospace;color:var(--dim);margin-left:4px}
+/* 最近使用 */
+.recent-bar{padding:6px 20px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;border-bottom:1px solid rgba(42,42,61,0.15);background:rgba(20,20,28,0.15);flex-shrink:0;min-height:0;overflow:hidden;transition:all .2s}
+.recent-bar:empty{display:none}
+.recent-bar .recent-label{font-size:.72rem;color:var(--dim);margin-right:4px;white-space:nowrap}
+.recent-bar .recent-item{font-size:.75rem;padding:4px 10px;border-radius:8px;background:rgba(108,99,255,.1);border:1px solid rgba(108,99,255,.2);cursor:pointer;transition:all .15s;white-space:nowrap}
+.recent-bar .recent-item:hover{background:rgba(108,99,255,.25);border-color:var(--accent)}
+/* 分类标签 */
+.cat-bar{padding:6px 20px;display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid rgba(42,42,61,0.15);background:rgba(20,20,28,0.1);flex-shrink:0}
+.cat-tag{font-size:.75rem;padding:4px 12px;border-radius:8px;background:rgba(15,15,19,0.2);border:1px solid rgba(42,42,61,0.2);cursor:pointer;transition:all .15s;user-select:none}
+.cat-tag:hover{border-color:var(--accent);background:rgba(108,99,255,.1)}
+.cat-tag.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+/* 全局进度条 */
+.progress-overlay{display:none;position:fixed;top:0;left:0;right:0;height:3px;z-index:9999;background:rgba(0,0,0,.3)}
+.progress-overlay.show{display:block}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width .3s}
+.progress-overlay.indeterminate .progress-bar{width:30%;animation:progress-slide 1.5s infinite}
+@keyframes progress-slide{0%{margin-left:-30%}100%{margin-left:100%}}
+/* Toast 容器 */
+.toast-container{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column-reverse;gap:8px;pointer-events:none}
+.toast-item{padding:10px 20px;border-radius:10px;font-size:.85rem;font-weight:600;color:#fff;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:auto;text-align:center;max-width:90vw;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.toast-item.show{opacity:1;transform:translateY(0)}
+.toast-item.t-success{background:var(--green)}
+.toast-item.t-error{background:var(--red)}
+.toast-item.t-info{background:var(--accent)}
+.toast-item.t-warn{background:var(--orange)}
 /* 侧边栏移动端点击外部关闭 */
 @media(max-width:768px){
   .sidebar.open~.main{pointer-events:none}
@@ -271,6 +296,8 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{border-color:var
       <button class="btn bo bs" onclick="clearTraces()" style="white-space:nowrap" aria-label="清除使用痕迹">🧹</button>
     </div>
   </div>
+  <div class="recent-bar" id="recentBar"></div>
+  <div class="cat-bar" id="catBar"></div>
   <div class="cnt" id="main-content" role="main">
 
     <!-- 图片格式转换 -->
@@ -993,19 +1020,7 @@ function tSidebar(force){
 
 // ===== Helpers =====
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-function showToast(msg,duration){
-  var toast=document.createElement('div');
-  toast.textContent=msg;
-  toast.setAttribute('role','status');
-  toast.setAttribute('aria-live','polite');
-  toast.style.cssText='position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:10px 20px;border-radius:10px;font-size:.85rem;font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;box-shadow:0 4px 20px rgba(0,0,0,.3)';
-  document.body.appendChild(toast);
-  requestAnimationFrame(function(){toast.style.opacity='1'});
-  setTimeout(function(){
-    toast.style.opacity='0';
-    setTimeout(function(){toast.remove()},300);
-  },duration||1500);
-}
+// showToast moved to enhanced version below
 function cpTxt(id){
   var el=document.getElementById(id);
   var text=el.value||el.textContent;
@@ -1699,6 +1714,7 @@ async function ocrGo(){
   var stEl=document.getElementById('ocr-st');
   var resEl=document.getElementById('ocr-res');
   btn.disabled=true;btn.textContent='⏳ 识别中...';
+  showProgressIndeterminate();
   stEl.textContent='正在加载语言包...';
   resEl.innerHTML='';
   try{
@@ -1730,7 +1746,7 @@ async function ocrGo(){
     stEl.textContent='识别失败';
     resEl.innerHTML='<span class="err">错误: '+esc(e.message)+'</span>';
   }
-  btn.disabled=false;btn.textContent='👁️ 开始识别';
+  hideProgress();btn.disabled=false;btn.textContent='👁️ 开始识别';
 }
 
 // ===== JSON =====
@@ -1842,18 +1858,18 @@ async function initFFmpeg(){
     ffmpegInstance.on('log',function(e){console.log(e)});
     ffmpegInstance.on('progress',function(e){
       var pct=Math.round((e.progress||0)*100);
-      progressEl.forEach(function(el){el.textContent='处理中... '+pct+'%'})
+      progressEl.forEach(function(el){el.textContent='处理中... '+pct+'%'});
+      showProgress(pct);
     });
     var baseURL='https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
-    showProgress('正在下载引擎核心 (约 20MB)...');
+    showProgressIndeterminate();
     var coreURL=await Util.toBlobURL(baseURL+'/ffmpeg-core.js','text/javascript');
-    showProgress('正在下载 WASM 核心...');
     var wasmURL=await Util.toBlobURL(baseURL+'/ffmpeg-core.wasm','application/wasm');
-    showProgress('正在初始化引擎...');
     await ffmpegInstance.load({coreURL:coreURL,wasmURL:wasmURL});
     ffmpegLoaded=true;
+    hideProgress();
     return true;
-  }catch(e){console.error('FFmpeg load error:',e);return false}
+  }catch(e){console.error('FFmpeg load error:',e);hideProgress();return false}
 }
 function setFFStatus(id,txt){var el=document.getElementById(id);if(el)el.textContent=txt}
 function setFFBtn(id,disabled,txt){var el=document.getElementById(id);if(el){el.disabled=disabled;el.textContent=txt}}
@@ -1883,7 +1899,7 @@ async function v2aGo(){
     el.innerHTML='<span class="ok">✓</span> 提取完成！<audio controls src="'+url+'" style="display:block;margin-top:6px;width:100%"></audio><a href="'+url+'" download="'+esc(v2aFile.name).replace(/\.[^.]+$/,'.'+extMap[fmt])+'"><button class="btn bo bs" style="margin-top:6px">💾 下载音频</button></a>';
     await ffmpegInstance.deleteFile('input');await ffmpegInstance.deleteFile('output.'+extMap[fmt]);
   }catch(e){setFFStatus('v2a-st','错误: '+e.message)}
-  setFFBtn('v2a-btn',false,'🎵 提取音频');
+  hideProgress();setFFBtn('v2a-btn',false,'🎵 提取音频');
 }
 
 // 音频格式转换
@@ -1911,7 +1927,7 @@ async function acvGo(){
     el.innerHTML='<span class="ok">✓</span> 转换完成！<audio controls src="'+url+'" style="display:block;margin-top:6px;width:100%"></audio><a href="'+url+'" download="'+esc(acvFile.name).replace(/\.[^.]+$/,'.'+extMap[fmt])+'"><button class="btn bo bs" style="margin-top:6px">💾 下载</button></a>';
     await ffmpegInstance.deleteFile('input');await ffmpegInstance.deleteFile('output.'+extMap[fmt]);
   }catch(e){setFFStatus('acv-st','错误: '+e.message)}
-  setFFBtn('acv-btn',false,'🔄 转换');
+  hideProgress();setFFBtn('acv-btn',false,'🔄 转换');
 }
 
 // 视频格式转换
@@ -1944,7 +1960,7 @@ async function vcvGo(){
     el.innerHTML='<span class="ok">✓</span> 转换完成！<video controls src="'+url+'" style="max-width:100%;border-radius:10px;margin-top:6px"></video><a href="'+url+'" download="'+esc(vcvFile.name).replace(/\.[^.]+$/,'.'+fmt)+'"><button class="btn bo bs" style="margin-top:6px">💾 下载视频</button></a>';
     await ffmpegInstance.deleteFile('input');await ffmpegInstance.deleteFile('output.'+fmt);
   }catch(e){setFFStatus('vcv-st','错误: '+e.message)}
-  setFFBtn('vcv-btn',false,'🎬 转换');
+  hideProgress();setFFBtn('vcv-btn',false,'🎬 转换');
 }
 
 // 视频剪切
@@ -1982,7 +1998,7 @@ async function vcutGo(){
     el.innerHTML='<span class="ok">✓</span> 剪切完成！<video controls src="'+url+'" style="max-width:100%;border-radius:10px;margin-top:6px"></video><a href="'+url+'" download="cut_'+esc(vcutFile.name).replace(/\.[^.]+$/,'.'+fmt)+'"><button class="btn bo bs" style="margin-top:6px">💾 下载</button></a>';
     await ffmpegInstance.deleteFile('input');await ffmpegInstance.deleteFile('output.'+fmt);
   }catch(e){setFFStatus('vcut-st','错误: '+e.message)}
-  setFFBtn('vcut-btn',false,'✂️ 剪切');
+  hideProgress();setFFBtn('vcut-btn',false,'✂️ 剪切');
 }
 
 // 视频提取帧
@@ -2028,7 +2044,7 @@ async function vframeGo(){
     await ffmpegInstance.deleteFile('input');
     setFFStatus('vframe-st','提取完成');
   }catch(e){setFFStatus('vframe-st','错误: '+e.message)}
-  setFFBtn('vframe-btn',false,'🖼️ 提取');
+  hideProgress();setFFBtn('vframe-btn',false,'🖼️ 提取');
 }
 
 
@@ -2148,12 +2164,33 @@ function toggleTheme(){
 }
 if(isLight){document.body.classList.add('light');setTimeout(function(){document.getElementById('themeBtn').textContent='☀️'},100)}
 
-// ===== 使用统计 =====
+// ===== 使用统计 + 最近使用 =====
 var stats={};
 try{stats=JSON.parse(localStorage.getItem('toolbox_stats')||'{}')}catch(e){}
+var recentTools=[];
+try{recentTools=JSON.parse(localStorage.getItem('toolbox_recent')||'[]')}catch(e){}
 function recordUsage(tool){
   stats[tool]=(stats[tool]||0)+1;
   try{localStorage.setItem('toolbox_stats',JSON.stringify(stats))}catch(e){}
+  // Update recently used
+  recentTools=recentTools.filter(function(t){return t!==tool});
+  recentTools.unshift(tool);
+  if(recentTools.length>5)recentTools=recentTools.slice(0,5);
+  try{localStorage.setItem('toolbox_recent',JSON.stringify(recentTools))}catch(e){}
+  renderRecent();
+}
+function renderRecent(){
+  var bar=document.getElementById('recentBar');
+  if(!bar||!recentTools.length){if(bar)bar.innerHTML='';return}
+  var html='<span class="recent-label">⏱ 最近使用</span>';
+  recentTools.forEach(function(t){
+    html+='<span class="recent-item" data-t="'+t+'" onclick="switchTool(\''+t+'\')">'+(titles[t]||t)+'</span>';
+  });
+  bar.innerHTML=html;
+}
+function switchTool(t){
+  var el=document.querySelector('.ni[data-t="'+t+'"]');
+  if(el)el.click();
 }
 function sortByUsage(){
   document.querySelectorAll('.nav-g').forEach(function(group){
@@ -2163,6 +2200,96 @@ function sortByUsage(){
   });
 }
 sortByUsage();
+renderRecent();
+
+// ===== 分类筛选 =====
+var categories={
+  '文件转换':['imgcv','pdf','word2html','word2txt','word2md','word2pdf','txt2word','html2word','xls2csv','xls2json','xls2html','xls2txt','csv2xls','json2xls','md','csv2json','json2csv','txt2pdf','img2base','img2ico','imgmerge','txt2img'],
+  '压缩':['zip'],
+  '音视频':['v2a','acv','vcv','vcut','vframe'],
+  '图片工具':['comp','resize','wm','cp'],
+  '识别编码':['ocr','qr','b64','hash'],
+  '开发者':['jf','re','diff','url','ts'],
+  '操作指南':['diskclean','storesense','sysclean','cmdclean']
+};
+var activeCat='';
+function renderCategories(){
+  var bar=document.getElementById('catBar');
+  if(!bar)return;
+  var html='<span class="cat-tag'+(activeCat===''?' on':'')+'" onclick="filterCat(\'\')">全部</span>';
+  Object.keys(categories).forEach(function(cat){
+    html+='<span class="cat-tag'+(activeCat===cat?' on':'')+'" onclick="filterCat(\''+cat+'\')">'+cat+'</span>';
+  });
+  bar.innerHTML=html;
+}
+function filterCat(cat){
+  activeCat=cat;
+  renderCategories();
+  var tools=cat?categories[cat]:null;
+  document.querySelectorAll('.nav-g').forEach(function(group){
+    var hasVisible=false;
+    group.querySelectorAll('.ni[data-t]').forEach(function(el){
+      var t=el.getAttribute('data-t');
+      if(!tools||tools.includes(t)){el.style.display='';hasVisible=true}
+      else{el.style.display='none'}
+    });
+    group.style.display=hasVisible?'':'none';
+  });
+  if(cat){
+    document.querySelectorAll('.nav-g').forEach(function(g){g.classList.add('open')});
+  }
+}
+renderCategories();
+
+// ===== 增强 Toast =====
+function showToast(msg,duration,type){
+  var container=document.getElementById('toastContainer');
+  if(!container){
+    // Fallback to old toast
+    var toast=document.createElement('div');
+    toast.textContent=msg;
+    toast.style.cssText='position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:10px 20px;border-radius:10px;font-size:.85rem;font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;box-shadow:0 4px 20px rgba(0,0,0,.3)';
+    document.body.appendChild(toast);
+    requestAnimationFrame(function(){toast.style.opacity='1'});
+    setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove()},300)},duration||1500);
+    return;
+  }
+  var t=document.createElement('div');
+  t.className='toast-item t-'+(type||'info');
+  t.textContent=msg;
+  t.setAttribute('role','status');
+  t.setAttribute('aria-live','polite');
+  container.appendChild(t);
+  requestAnimationFrame(function(){t.classList.add('show')});
+  setTimeout(function(){
+    t.classList.remove('show');
+    setTimeout(function(){t.remove()},300);
+  },duration||2000);
+  // Keep max 3 toasts
+  while(container.children.length>3){container.firstChild.remove()}
+}
+
+// ===== 全局进度条 =====
+function showProgress(pct){
+  var ov=document.getElementById('progressOv');
+  var bar=document.getElementById('progressBar');
+  if(!ov||!bar)return;
+  ov.classList.add('show');
+  ov.classList.remove('indeterminate');
+  bar.style.width=(pct||0)+'%';
+}
+function showProgressIndeterminate(){
+  var ov=document.getElementById('progressOv');
+  if(!ov)return;
+  ov.classList.add('show','indeterminate');
+}
+function hideProgress(){
+  var ov=document.getElementById('progressOv');
+  if(!ov)return;
+  ov.classList.remove('show','indeterminate');
+  var bar=document.getElementById('progressBar');
+  if(bar)bar.style.width='0%';
+}
 
 
 // ===== 页面加载动画 =====
@@ -2265,6 +2392,8 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').then(
   <div class="load-text">🛠️ 体院办公 加载中...</div>
 </div>
 <button class="back-top" id="backTop" onclick="document.querySelector('.cnt').scrollTo({top:0,behavior:'smooth'})">↑</button>
+<div class="progress-overlay" id="progressOv"><div class="progress-bar" id="progressBar"></div></div>
+<div class="toast-container" id="toastContainer"></div>
 </body>
 </html>
 <!-- 1783220484 -->
