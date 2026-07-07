@@ -1021,6 +1021,7 @@ function cpTxt(id){
 function dlBlob(content,name,type){
   var b=new Blob([content],{type:type});
   var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href)},3000);
 }
 function setupDz(dzId,fileId,cb){
   var dz=document.getElementById(dzId),fi=document.getElementById(fileId);
@@ -1058,7 +1059,10 @@ function setBtnLoading(btn,loading,text){
   if(text)btn.textContent=text;
 }
 function showPv(files,elId){
-  var el=document.getElementById(elId);el.innerHTML='';
+  var el=document.getElementById(elId);
+  // Release old preview URLs
+  el.querySelectorAll('img').forEach(function(img){if(img.src.startsWith('blob:'))URL.revokeObjectURL(img.src)});
+  el.innerHTML='';
   Array.from(files).forEach(function(f){
     if(!f.type||!f.type.startsWith('image/'))return;
     var img=document.createElement('img');img.src=URL.createObjectURL(f);
@@ -1066,6 +1070,40 @@ function showPv(files,elId){
   });
 }
 function loadImg(f){return new Promise(function(r){var img=new Image();img.onload=function(){r(img)};img.src=URL.createObjectURL(f)})}
+
+// ===== 输入校验工具 =====
+function validateNum(id,opts){
+  var el=document.getElementById(id);
+  if(!el)return true;
+  var v=parseFloat(el.value);
+  if(isNaN(v)){showToast(opts.label+'不能为空');el.focus();return false}
+  if(opts.min!==undefined&&v<opts.min){showToast(opts.label+'不能小于'+opts.min);el.focus();return false}
+  if(opts.max!==undefined&&v>opts.max){showToast(opts.label+'不能大于'+opts.max);el.focus();return false}
+  return true;
+}
+function validateRequired(id,label){
+  var el=document.getElementById(id);
+  if(!el||!el.value.trim()){showToast(label+'不能为空');if(el)el.focus();return false}
+  return true;
+}
+// ===== 并发锁 =====
+var _busyLocks={};
+function acquireLock(key){
+  if(_busyLocks[key]){showToast('⏳ 上一个任务还在处理中，请等待完成');return false}
+  _busyLocks[key]=true;return true;
+}
+function releaseLock(key){_busyLocks[key]=false}
+function withLock(key,fn){
+  if(!acquireLock(key))return;
+  try{
+    var result=fn();
+    if(result&&typeof result.finally==='function'){
+      result.finally(function(){releaseLock(key)});
+    }else{
+      releaseLock(key);
+    }
+  }catch(e){releaseLock(key);throw e}
+}
 
 // ===== 输入自动保存/恢复 =====
 (function(){
@@ -1106,6 +1144,7 @@ function loadImg(f){return new Promise(function(r){var img=new Image();img.onloa
 var icFiles=[];
 setupDz('ic-dz','ic-f',function(f){icFiles=Array.from(f);if(icFiles.some(function(x){return !checkFileSize(x,30)}))return;showPv(f,'ic-pv')});
 function icGo(){safeRun(function(){
+  if(!acquireLock('ic'))return;
   if(!icFiles.length){showToast('请先选图');return}
   var fmt=document.getElementById('ic-fmt').value;
   var q=parseInt(document.getElementById('ic-q').value)/100;
@@ -1121,7 +1160,7 @@ function icGo(){safeRun(function(){
         var a=document.createElement('a');a.href=url;
         a.download=f.name.replace(/\.[^.]+$/,'.'+ext);a.click();
         setTimeout(function(){URL.revokeObjectURL(url)},1000);
-        count++;if(count===icFiles.length)showToast('✅ 转换完成，共 '+count+' 个文件');
+        count++;if(count===icFiles.length){showToast('✅ 转换完成，共 '+count+' 个文件');releaseLock('ic')};
       },fmt,q);
     };img.src=URL.createObjectURL(f);
   });
@@ -1378,6 +1417,7 @@ var i2bFile=null;
 setupDz('i2b-dz','i2b-f',function(f){i2bFile=f[0];showPv(f,'i2b-pv')});
 function img2base(){safeRun(function(){
   if(!i2bFile){showToast('请先选图');return}
+  if(!acquireLock('i2b'))return;
   var fmt=document.getElementById('i2b-fmt').value;
   var reader=new FileReader();
   reader.onload=function(){
@@ -1386,6 +1426,7 @@ function img2base(){safeRun(function(){
     ta.value=result;ta.style.cssText='width:100%;min-height:120px;font-family:monospace;font-size:0.8rem;margin-top:10px;border-radius:10px;padding:10px;background:var(--bg);color:var(--text);border:1px solid var(--border)';
     var el=document.getElementById('i2b-res');el.innerHTML='<label>Base64 结果 ('+Math.round(result.length/1024)+'KB)</label>';el.appendChild(ta);
     var btn=document.createElement('button');btn.className='btn bo bs';btn.style.marginTop='8px';btn.textContent='复制';btn.onclick=function(){navigator.clipboard.writeText(result);showToast('✅ 已复制到剪贴板')};el.appendChild(btn);
+    releaseLock('i2b');
   };
   reader.readAsDataURL(i2bFile);
 },'i2b-res');}
@@ -1395,6 +1436,7 @@ var i2iFile=null;
 setupDz('i2i-dz','i2i-f',function(f){i2iFile=f[0];showPv(f,'i2i-pv')});
 function img2ico(){safeRun(function(){
   if(!i2iFile){showToast('请先选图');return}
+  if(!acquireLock('i2i'))return;
   var sz=parseInt(document.getElementById('i2i-sz').value);
   var img=new Image();img.onload=function(){
     var c=document.createElement('canvas');c.width=sz;c.height=sz;
@@ -1422,6 +1464,7 @@ function img2ico(){safeRun(function(){
         var blob=new Blob([header,entry,data],{type:'image/x-icon'});
         var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='favicon-'+sz+'x'+sz+'.ico';a.click();
         URL.revokeObjectURL(a.href);
+        releaseLock('i2i');
       });
     },'image/png');
   };img.src=URL.createObjectURL(i2iFile);
@@ -1432,6 +1475,8 @@ var mgFiles=[];
 setupDz('mg-dz','mg-f',function(f){mgFiles=Array.from(f);showPv(f,'mg-pv')});
 async function imgMerge(){safeRun(async function(){
   if(mgFiles.length<2){showToast('请至少选2张图');return}
+  if(!validateNum('mg-gap',{label:'间距',min:0,max:500}))return;
+  if(!acquireLock('mg'))return;
   var dir=document.getElementById('mg-dir').value;
   var gap=parseInt(document.getElementById('mg-gap').value);
   var bg=document.getElementById('mg-bg').value;
@@ -1451,13 +1496,15 @@ async function imgMerge(){safeRun(async function(){
     if(dir==='v'){ctx.drawImage(img,(maxW-img.width)/2,y);y+=img.height+gap}
     else{ctx.drawImage(img,x,(maxH-img.height)/2);x+=img.width+gap}
   });
-  c.toBlob(function(blob){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='merged.png';a.click()});
+  c.toBlob(function(blob){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='merged.png';a.click();releaseLock('mg')});
 },'mg-res');}
 
 // ===== Text to Image =====
 function txt2img(){safeRun(function(){
   var text=document.getElementById('t2i-in').value;
   if(!text.trim()){showToast('请输入文字');return}
+  if(!validateNum('t2i-size',{label:'字号',min:12,max:200}))return;
+  if(!acquireLock('t2i'))return;
   var size=parseInt(document.getElementById('t2i-size').value);
   var color=document.getElementById('t2i-color').value;
   var bg=document.getElementById('t2i-bg').value;
@@ -1478,6 +1525,7 @@ function txt2img(){safeRun(function(){
     var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='text-image.png';a.click();
     var el=document.getElementById('t2i-res');el.innerHTML='';el.appendChild(canvas);
     canvas.style.cssText='max-width:100%;border-radius:10px;border:1px solid var(--border)';
+    releaseLock('t2i');
   });
 },'t2i-res');}
 
@@ -1485,11 +1533,13 @@ function txt2img(){safeRun(function(){
 var cmpFiles=[];
 setupDz('cmp-dz','cmp-f',function(f){cmpFiles=Array.from(f);if(cmpFiles.some(function(x){return !checkFileSize(x,30)}))return;showPv(f,'cmp-pv')});
 function cmpGo(){safeRun(function(){
+  if(!acquireLock('cmp'))return;
   if(!cmpFiles.length){showToast('请先选图');return}
   var q=parseInt(document.getElementById('cmp-q').value)/100;
   var fmt=document.getElementById('cmp-fmt').value;
   var ext=fmt.split('/')[1]==='jpeg'?'jpg':'webp';
   var res=document.getElementById('cmp-res');res.innerHTML='';
+  var count=0;
   cmpFiles.forEach(function(f){
     var img=new Image();img.onload=function(){
       var c=document.createElement('canvas');c.width=img.width;c.height=img.height;
@@ -1503,6 +1553,7 @@ function cmpGo(){safeRun(function(){
         res.appendChild(div);a.click();
         URL.revokeObjectURL(img.src);
         setTimeout(function(){URL.revokeObjectURL(url)},3000);
+        count++;if(count===cmpFiles.length)releaseLock('cmp');
       },fmt,q);
     };img.src=URL.createObjectURL(f);
   });
@@ -1513,6 +1564,8 @@ var rszFile=null;
 setupDz('rsz-dz','rsz-f',function(f){rszFile=f[0];if(!checkFileSize(rszFile,30))return;showPv(f,'rsz-pv')});
 function rszGo(){safeRun(function(){
   if(!rszFile){showToast('请先选图');return}
+  if(!validateNum('rsz-w',{label:'宽度',min:1})||!validateNum('rsz-h',{label:'高度',min:1}))return;
+  if(!acquireLock('rsz'))return;
   var w=parseInt(document.getElementById('rsz-w').value);
   var h=parseInt(document.getElementById('rsz-h').value);
   var ratio=document.getElementById('rsz-r').value==='1';
@@ -1521,7 +1574,7 @@ function rszGo(){safeRun(function(){
     if(ratio){var r=Math.min(w/img.width,h/img.height);c.width=img.width*r;c.height=img.height*r}
     else{c.width=w;c.height=h}
     c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-    c.toBlob(function(blob){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='resized_'+rszFile.name;a.click()},rszFile.type);
+    c.toBlob(function(blob){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='resized_'+rszFile.name;a.click();releaseLock('rsz')},rszFile.type);
   };img.src=URL.createObjectURL(rszFile);
 },'rsz-res');}
 
@@ -1530,6 +1583,9 @@ var wmFile=null;
 setupDz('wm-dz','wm-f',function(f){wmFile=f[0];if(!checkFileSize(wmFile,30))return;showPv(f,'wm-pv')});
 function wmGo(){safeRun(function(){
   if(!wmFile){showToast('请先选图');return}
+  if(!validateRequired('wm-t','水印文字'))return;
+  if(!validateNum('wm-s',{label:'字号',min:1,max:500}))return;
+  if(!acquireLock('wm'))return;
   var text=document.getElementById('wm-t').value;
   var size=parseInt(document.getElementById('wm-s').value);
   var opacity=parseInt(document.getElementById('wm-o').value)/100;
@@ -1547,7 +1603,7 @@ function wmGo(){safeRun(function(){
       if(pos.includes('b'))y=img.height-size-pad;else if(pos.includes('t'))y=pad;else y=(img.height-size)/2;
       ctx.fillText(text,x,y);
     }
-    c.toBlob(function(blob){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='watermarked_'+wmFile.name;a.click()},wmFile.type);
+    c.toBlob(function(blob){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='watermarked_'+wmFile.name;a.click();releaseLock('wm')},wmFile.type);
   };img.src=URL.createObjectURL(wmFile);
 },'wm-res');}
 
@@ -1899,10 +1955,14 @@ setupDz('vcut-dz','vcut-f',function(f){
 });
 async function vcutGo(){
   if(!vcutFile){alert('请先选择视频');return}
+  var start=parseFloat(document.getElementById('vcut-s').value);
+  var end=parseFloat(document.getElementById('vcut-e').value);
+  if(isNaN(start)||isNaN(end)){showToast('请输入开始和结束时间');return}
+  if(start<0){showToast('开始时间不能为负数');return}
+  if(end<=start){showToast('结束时间必须大于开始时间');return}
   setFFBtn('vcut-btn',true,'⏳ 加载引擎...');setFFStatus('vcut-st','首次使用需下载约 20MB 引擎...');
   if(!(await initFFmpeg())){setFFBtn('vcut-btn',false,'✂️ 剪切');setFFStatus('vcut-st','引擎加载失败');return}
-  var start=document.getElementById('vcut-s').value;
-  var end=document.getElementById('vcut-e').value;
+  var start=String(start),end=String(end);
   var fmt=document.getElementById('vcut-fmt').value;
   try{
     setFFBtn('vcut-btn',true,'⏳ 剪切中...');setFFStatus('vcut-st','正在剪切...');
