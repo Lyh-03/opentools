@@ -188,7 +188,18 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{border-color:var
 /* JSON 树形 */
 .json-toggle:hover{color:var(--accent)!important}
 .json-block{font-family:'Courier New',monospace;font-size:.82rem}
+/* 操作历史侧边栏 */
+.op-history-btn{position:fixed;right:10px;top:50%;transform:translateY(-50%);z-index:70;background:var(--accent);color:#fff;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(108,99,255,.3);transition:all .2s}
+.op-history-btn:hover{transform:translateY(-50%) scale(1.1)}
+.op-history-panel{position:fixed;right:-320px;top:0;bottom:0;width:300px;background:var(--sidebar);border-left:1px solid var(--border);z-index:80;transition:right .3s;display:flex;flex-direction:column;box-shadow:-4px 0 20px rgba(0,0,0,.3)}
+.op-history-panel.show{right:0}
+.op-history-panel .oh-hd{padding:14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.op-history-panel .oh-hd h3{font-size:.9rem;margin:0}
+.op-history-panel .oh-body{flex:1;overflow-y:auto}
+@media(max-width:768px){.op-history-panel{width:260px;right:-270px}.op-history-btn{right:6px;bottom:55px;top:auto;transform:none}}
 /* 侧边栏移动端点击外部关闭 */
+.oh-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:79}
+.oh-overlay.show{display:block}
 @media(max-width:768px){
   .sidebar.open~.main{pointer-events:none}
 }
@@ -1347,13 +1358,17 @@ document.querySelectorAll('.ni').forEach(function(el){
   el.onclick=activate;
   el.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();activate()}};
 });
-// ===== 手风琴折叠（允许多个同时展开）=====
+// ===== 手风琴折叠（同时只展开一个）=====
 document.querySelectorAll('.nav-l').forEach(function(label){
   if(!label.getAttribute('tabindex'))label.setAttribute('tabindex','0');
   if(!label.getAttribute('role'))label.setAttribute('role','menuitem');
   var toggle=function(){
     var group=label.parentElement;
-    group.classList.toggle('open');
+    var wasOpen=group.classList.contains('open');
+    // Close all other groups
+    document.querySelectorAll('.nav-g').forEach(function(g){g.classList.remove('open')});
+    // Toggle current
+    if(!wasOpen)group.classList.add('open');
   };
   label.onclick=toggle;
   label.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle()}};
@@ -1398,12 +1413,14 @@ function setupDz(dzId,fileId,cb){
     e.preventDefault();dz.classList.remove('drag');
     var files=e.dataTransfer.files;
     if(!files.length)return;
-    if(accept&&!matchAccept(files[0],accept)){alert('⚠️ 文件类型不支持，请选择: '+accept);return}
+    var err=validateFiles(files,accept);
+    if(err){showToast(err,3000,'error');return}
     cb(files);
   };
   fi.onchange=function(){
     if(!fi.files.length)return;
-    if(accept&&!matchAccept(fi.files[0],accept)){alert('⚠️ 文件类型不支持');fi.value='';return}
+    var err=validateFiles(fi.files,accept);
+    if(err){showToast(err,3000,'error');fi.value='';return}
     cb(fi.files);
   };
 }
@@ -1415,6 +1432,18 @@ function matchAccept(file,accept){
     if(t.endsWith('/*'))return file.type.startsWith(t.replace('/*',''));
     return file.type===t;
   });
+}
+function validateFiles(files,accept){
+  var maxSize=100*1024*1024; // 100MB
+  for(var i=0;i<files.length;i++){
+    var f=files[i];
+    // Size check
+    if(f.size>maxSize)return '⚠️ 文件 "'+f.name+'" 过大（'+(f.size/1024/1024).toFixed(1)+'MB），超过100MB限制';
+    if(f.size===0)return '⚠️ 文件 "'+f.name+'" 为空或无法读取，可能已损坏';
+    // Format check
+    if(accept&&!matchAccept(f,accept))return '⚠️ 不支持该格式，请上传: '+accept;
+  }
+  return null;
 }
 function setBtnLoading(btn,loading,text){
   if(typeof btn==='string')btn=document.getElementById(btn);
@@ -1470,6 +1499,95 @@ function withLock(key,fn){
   }catch(e){releaseLock(key);throw e}
 }
 
+// ===== 工具设置保存/恢复 =====
+(function(){
+  var SETTINGS_KEY='toolbox_settings';
+  function saveSettings(){
+    var settings={};
+    // Save all select, range, number inputs in tool panels
+    document.querySelectorAll('.tp select[id], .tp input[type="range"][id], .tp input[type="number"][id], .tp input[type="color"][id], .tp input[type="text"][id]').forEach(function(el){
+      if(el.id&&el.value!==undefined)settings[el.id]=el.value;
+    });
+    // Save chip toggle states
+    document.querySelectorAll('.tp .chip[id]').forEach(function(el){
+      settings['_chip_'+el.id]=el.classList.contains('on')?'1':'0';
+    });
+    try{localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings))}catch(e){}
+  }
+  function restoreSettings(){
+    try{
+      var settings=JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}');
+      Object.keys(settings).forEach(function(id){
+        if(id.startsWith('_chip_')){
+          var realId=id.substring(6);
+          var el=document.getElementById(realId);
+          if(el)el.classList.toggle('on',settings[id]==='1');
+        }else{
+          var el=document.getElementById(id);
+          if(el&&(el.tagName==='SELECT'||el.tagName==='INPUT'))el.value=settings[id];
+        }
+      });
+      // Update display values
+      var cmpV=document.getElementById('cmp-v');
+      var cmpQ=document.getElementById('cmp-q');
+      if(cmpV&&cmpQ)cmpV.textContent=cmpQ.value;
+    }catch(e){}
+  }
+  // Save on change
+  document.addEventListener('change',function(e){
+    if(e.target.closest('.tp')){clearTimeout(window._settingsTimer);window._settingsTimer=setTimeout(saveSettings,500)}
+  });
+  document.addEventListener('input',function(e){
+    if(e.target.closest('.tp')&&(e.target.type==='range'||e.target.type==='number')){
+      clearTimeout(window._settingsTimer);window._settingsTimer=setTimeout(saveSettings,500);
+    }
+  });
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',restoreSettings);
+  else restoreSettings();
+})();
+
+// ===== 操作历史 =====
+var opHistory=[];
+try{opHistory=JSON.parse(localStorage.getItem('toolbox_op_history')||'[]')}catch(e){}
+function addOpHistory(tool,file,result,sizeBefore,sizeAfter,elapsed){
+  var entry={id:Date.now(),tool:tool,file:file,result:result,sizeBefore:sizeBefore||0,sizeAfter:sizeAfter||0,elapsed:elapsed||0,time:new Date().toLocaleString('zh-CN')};
+  opHistory.unshift(entry);
+  if(opHistory.length>20)opHistory=opHistory.slice(0,20);
+  try{localStorage.setItem('toolbox_op_history',JSON.stringify(opHistory))}catch(e){}
+  renderOpHistory();
+}
+function renderOpHistory(){
+  var el=document.getElementById('opHistoryList');
+  if(!el)return;
+  if(!opHistory.length){el.innerHTML='<div style="color:var(--dim);text-align:center;padding:20px;font-size:.82rem">暂无操作记录</div>';return}
+  var html='';
+  opHistory.forEach(function(op){
+    var sizeInfo='';
+    if(op.sizeBefore&&op.sizeAfter){
+      var saving=((1-op.sizeAfter/op.sizeBefore)*100).toFixed(0);
+      sizeInfo=' <span style="color:var(--green);font-size:.7rem">-'+saving+'%</span>';
+    }
+    html+='<div style="padding:8px 10px;border-bottom:1px solid var(--border);font-size:.78rem;cursor:pointer" onclick="switchTool(\''+op.tool+'\')">';
+    html+='<div style="display:flex;justify-content:space-between"><span style="color:var(--accent)">'+esc(op.tool)+'</span><span style="color:var(--dim)">'+op.time+'</span></div>';
+    html+='<div style="color:var(--dim);margin-top:2px">'+esc(op.file||'')+sizeInfo+(op.elapsed?' <span style="color:var(--dim)">'+op.elapsed+'ms</span>':'')+'</div>';
+    html+='</div>';
+  });
+  el.innerHTML=html;
+}
+function toggleOpHistory(){
+  var panel=document.getElementById('opHistoryPanel');
+  var overlay=document.getElementById('ohOverlay');
+  if(!panel)return;
+  panel.classList.toggle('show');
+  if(overlay)overlay.classList.toggle('show',panel.classList.contains('show'));
+}
+function clearOpHistory(){
+  if(!confirm('确定清空操作历史？'))return;
+  opHistory=[];
+  try{localStorage.removeItem('toolbox_op_history')}catch(e){}
+  renderOpHistory();
+}
+
 // ===== 输入自动保存/恢复 =====
 (function(){
   var SAVE_KEY='toolbox_inputs';
@@ -1511,21 +1629,41 @@ setupDz('ic-dz','ic-f',function(f){icFiles=Array.from(f);if(icFiles.some(functio
 function icGo(){safeRun(function(){
   if(!acquireLock('ic'))return;
   if(!icFiles.length){showToast('请先选图');return}
+  var t0=Date.now();
   var fmt=document.getElementById('ic-fmt').value;
   var q=parseInt(document.getElementById('ic-q').value)/100;
   var ext=fmt.split('/')[1]==='jpeg'?'jpg':fmt.split('/')[1];
-  var count=0;
+  var count=0,blobs=[];
   icFiles.forEach(function(f){
     var img=new Image();img.onload=function(){
       var c=document.createElement('canvas');c.width=img.width;c.height=img.height;
       c.getContext('2d').drawImage(img,0,0);
       URL.revokeObjectURL(img.src);
       c.toBlob(function(blob){
-        var url=URL.createObjectURL(blob);
-        var a=document.createElement('a');a.href=url;
-        a.download=f.name.replace(/\.[^.]+$/,'.'+ext);a.click();
-        setTimeout(function(){URL.revokeObjectURL(url)},1000);
-        count++;if(count===icFiles.length){showToast('✅ 转换完成，共 '+count+' 个文件');releaseLock('ic')};
+        var outName=f.name.replace(/\.[^.]+$/,'.'+ext);
+        blobs.push({name:outName,blob:blob});
+        count++;
+        if(count===icFiles.length){
+          var elapsed=Date.now()-t0;
+          if(blobs.length===1){
+            var url=URL.createObjectURL(blobs[0].blob);
+            var a=document.createElement('a');a.href=url;a.download=blobs[0].name;a.click();
+            setTimeout(function(){URL.revokeObjectURL(url)},3000);
+          }else if(typeof JSZip!=='undefined'){
+            var zip=new JSZip();
+            blobs.forEach(function(b){zip.file(b.name,b.blob)});
+            zip.generateAsync({type:'blob'}).then(function(zipBlob){
+              var url=URL.createObjectURL(zipBlob);
+              var a=document.createElement('a');a.href=url;a.download='converted_'+blobs.length+'files.zip';a.click();
+              setTimeout(function(){URL.revokeObjectURL(url)},3000);
+            });
+          }else{
+            blobs.forEach(function(b){var url=URL.createObjectURL(b.blob);var a=document.createElement('a');a.href=url;a.download=b.name;a.click();setTimeout(function(){URL.revokeObjectURL(url)},3000)});
+          }
+          addOpHistory('图片格式转换',blobs.length+' 个文件','转换完成',0,0,elapsed);
+          showToast('✅ 转换完成，共 '+count+' 个文件 ('+elapsed+'ms)',2000,'success');
+          releaseLock('ic');
+        }
       },fmt,q);
     };img.src=URL.createObjectURL(f);
   });
@@ -1928,17 +2066,19 @@ function cmpGo(){safeRun(function(){
   }
 });}
 function cmpGoQuality(){
+  var t0=Date.now();
   var q=parseInt(document.getElementById('cmp-q').value)/100;
   var fmt=document.getElementById('cmp-fmt').value;
   var ext=fmt.split('/')[1]==='jpeg'?'jpg':'webp';
   var res=document.getElementById('cmp-res');res.innerHTML='';
-  var count=0;
+  var count=0,totalSaved=0;
   cmpFiles.forEach(function(f){
     var img=new Image();img.onload=function(){
       var c=document.createElement('canvas');c.width=img.width;c.height=img.height;
       c.getContext('2d').drawImage(img,0,0);
       c.toBlob(function(blob){
         var saving=((1-blob.size/f.size)*100).toFixed(1);
+        totalSaved+=f.size-blob.size;
         var url=URL.createObjectURL(blob);
         var a=document.createElement('a');a.href=url;a.download='compressed_'+f.name.replace(/\.[^.]+$/,'.'+ext);
         var div=document.createElement('div');div.style.marginTop='6px';
@@ -1949,7 +2089,13 @@ function cmpGoQuality(){
         res.appendChild(div);a.click();
         URL.revokeObjectURL(img.src);
         setTimeout(function(){URL.revokeObjectURL(url)},3000);
-        count++;if(count===cmpFiles.length)releaseLock('cmp');
+        count++;
+        if(count===cmpFiles.length){
+          var elapsed=Date.now()-t0;
+          addOpHistory('图片压缩',count+' 个文件','压缩完成',totalSaved+f.size,0,elapsed);
+          showToast('✅ 压缩完成，节省 '+(totalSaved/1024).toFixed(0)+'KB ('+elapsed+'ms)',2000,'success');
+          releaseLock('cmp');
+        }
       },fmt,q);
     };img.src=URL.createObjectURL(f);
   });
@@ -3995,6 +4141,12 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').then(
   <div class="load-text">🛠️ 体院办公 加载中...</div>
 </div>
 <button class="back-top" id="backTop" onclick="document.querySelector('.cnt').scrollTo({top:0,behavior:'smooth'})">↑</button>
+<button class="op-history-btn" onclick="toggleOpHistory()" title="操作历史" aria-label="操作历史">📋</button>
+<div class="oh-overlay" id="ohOverlay" onclick="toggleOpHistory()"></div>
+<div class="op-history-panel" id="opHistoryPanel">
+  <div class="oh-hd"><h3>📋 操作历史</h3><div><button class="btn bo bs" style="font-size:.72rem;padding:3px 8px" onclick="clearOpHistory()">清空</button> <button class="btn bo bs" style="font-size:.72rem;padding:3px 8px" onclick="toggleOpHistory()">✕</button></div></div>
+  <div class="oh-body" id="opHistoryList"></div>
+</div>
 <div class="progress-overlay" id="progressOv"><div class="progress-bar" id="progressBar"></div></div>
 <div class="toast-container" id="toastContainer"></div>
 </body>
